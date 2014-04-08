@@ -93,14 +93,10 @@ void TWIC_SlaveProcessData(void){
  */
 int main(void){
 	/* Initialize PORTE for output and PORTD for inverted input. */
-
-	//PORTE.DIRSET = 0xFF;
-	//PORTD.DIRCLR = 0xFF;
 	PORTCFG.MPCMASK = 0xFF;
-	//PORTD.PIN0CTRL |= PORT_INVEN_bm;
+
 	
-	PORTA_DIR = 0xFF;
-//      PORTD.PIN0CTRL = (PORTD.PIN0CTRL & ~PORT_OPC_gm) | PORT_OPC_PULLUP_gc;
+	PORTA_DIR = 0xFF; // Set PORTA to be an output for LEDS
 	
 	// Enable internal pull-up on PC0, PC1.. Uncomment if you don't have external pullups
 	//PORTCFG.MPCMASK = 0x03; // Configure several PINxCTRL registers at the same time
@@ -121,82 +117,36 @@ int main(void){
 	/* Enable LO interrupt level. */
 	PMIC.CTRL |= PMIC_LOLVLEN_bm;
 	sei();
-
-	uint8_t BufPos = 0;
-	int temp_int = 0x00;
-	int temp_low = 0x00;
-	int temp_high = 0x00;
 	
-	uint8_t slave_addr = 0x00;
-	uint8_t breakflag = 0;
+	PORTE_DIR = 0x00; // Set PORTE to be input
 	
-	PORTE_DIR = 0x00;
-	
-	//while(1){
-		
+	while(1){
 		
 		while(PORTE_IN != 0x01){
 			// wait for ready to go high (connect PORTD, PIN5 to ready)
 		}
 		
-
-		/*
-		// testing PORTE_IN
-		if (PORTE_IN == 0x00){
-			PORTA_OUT = 0b11000011;
-		}else{
-			PORTA_OUT = 0b00111100;
-		}
-		*/
-		
-		
-		
-		sendBuffer[0] = SLAVE_ADDRESS;
+		sendBuffer[0] = SLAVE_ADDRESS; // set the slave address to the first element of the send buffer
 		TWI_MasterWriteRead(&twiMaster,
 		                    SLAVE_ADDRESS,
 		                    &sendBuffer[0],
-		                    0,
-		                    4); // read 0 bytes to just write slave addr
+		                    0,  // write 0 bytes to slave address
+		                    4); // read 0 bytes from slave address
 
 		while (twiMaster.status != TWIM_STATUS_READY) {
-			//PORTA_OUT = 0b00010000;
-			//PORTA_OUT = 0b00001000;
 			// Wait until transaction is complete.
 		}
-
-		//Show the sent byte received and processed on LEDs.
-		// PORTE.OUT = (twiMaster.readData[0]);
 		
-		//PORTA_OUT = twiMaster.readData[3];
-		//_delay_ms(500);
-		
-		//PORTA_OUT = 0b11011011;
-		
-		
+		// iterate through the receive buffer (4 bytes long);
+		// display 8 bits at a time for 500ms each on PORTA LEDS
 		int i = 0;
 		for (i=0; i<=3; i++){
 			//if (twiMaster.readData[i] != 0x00) breakflag = 1;
 			PORTA_OUT = twiMaster.readData[i];
 			_delay_ms(500);
 		}
-		PORTA_OUT = 0b00000111;
-		/*
-		if (breakflag == 1){
-			// display the address
-			while(1){
-				PORTA_OUT = SLAVE_ADDRESS;	
-				_delay_ms(500);
-				PORTA_OUT = 0x01;
-				_delay_ms(500);
-				PORTA_OUT = 0x80;
-				_delay_ms(500);
-			}
-			
-			break;
-		}
-		*/
 		
-	//} /* execution loop */
+	} /* execution loop */
 }
 
 /*! TWIC Master Interrupt vector. */
