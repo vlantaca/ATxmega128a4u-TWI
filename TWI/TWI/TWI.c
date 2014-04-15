@@ -55,34 +55,24 @@
 #include "twi_master_driver.h"
 #include "twi_slave_driver.h"
 #include <util/delay.h>
+
 /*! Defining an example slave address. */
-//#define SLAVE_ADDRESS    0b00101000
 #define SLAVE_ADDRESS    0b00101000
 
 /*! Defining number of bytes in buffer. */
-#define NUM_BYTES        8
+#define NUM_BYTES        4
 
 /*! CPU speed 2MHz, BAUDRATE 100kHz and Baudrate Register Settings */
 #define CPU_SPEED   2000000
 #define BAUDRATE	100000
 #define TWI_BAUDSETTING TWI_BAUD(CPU_SPEED, BAUDRATE)
 
-
 /* Global variables */
 TWI_Master_t twiMaster;    /*!< TWI master module. */
-TWI_Slave_t twiSlave;      /*!< TWI slave module. */
-
 
 /*! Buffer with test data to send.*/
-uint8_t sendBuffer[NUM_BYTES] = {0x55, 0xAA, 0xF0, 0x0F, 0xB0, 0x0B, 0xDE, 0xAD};
+uint8_t sendBuffer[NUM_BYTES] = {0xCA, 0xFE, 0xBA, 0xBE};
 
-/*! Simple function that invert the received value in the sendbuffer. This
- *  function is used in the driver and passed on as a pointer to the driver.
- */
-void TWIC_SlaveProcessData(void){
-	uint8_t bufIndex = twiSlave.bytesReceived;
-	twiSlave.sendData[bufIndex] = (~twiSlave.receivedData[bufIndex]);
-}
 
 
 /*! /brief Example code
@@ -93,12 +83,10 @@ void TWIC_SlaveProcessData(void){
  */
 int main(void){
 	/* Initialize PORTE for output and PORTD for inverted input. */
-	PORTCFG.MPCMASK = 0xFF;
-
 	
 	PORTA_DIR = 0xFF; // Set PORTA to be an output for LEDS
 	
-	// Enable internal pull-up on PC0, PC1.. Uncomment if you don't have external pullups
+	//Enable internal pull-up on PC0, PC1.. Uncomment if you don't have external pullups
 	//PORTCFG.MPCMASK = 0x03; // Configure several PINxCTRL registers at the same time
 	//PORTC.PIN0CTRL = (PORTC.PIN0CTRL & ~PORT_OPC_gm) | PORT_OPC_PULLUP_gc; //Enable pull-up to get a defined level on the switches
 
@@ -108,45 +96,37 @@ int main(void){
 	               TWI_MASTER_INTLVL_LO_gc,
 	               TWI_BAUDSETTING);
 
-	/* Initialize TWI slave. */
-	TWI_SlaveInitializeDriver(&twiSlave, &TWIC, TWIC_SlaveProcessData);
-	TWI_SlaveInitializeModule(&twiSlave,
-	                          SLAVE_ADDRESS,
-	                          TWI_SLAVE_INTLVL_LO_gc);
-
 	/* Enable LO interrupt level. */
-	PMIC.CTRL |= PMIC_LOLVLEN_bm;
-	sei();
+	PMIC.CTRL |= PMIC_LOLVLEN_bm; // PMIC controls the handling and prioritizing of interrupt requests    <----------
+	sei(); // enables interrupts   <-----------
 	
-	PORTE_DIR = 0x00; // Set PORTE to be input
+	PORTA_DIR = 0xFF;
+	/*
+	ReadFromSensor(&twiMaster, SLAVE_ADDRESS);
 	
-	while(1){
-		
-		while(PORTE_IN != 0x01){
-			// wait for ready to go high (connect PORTD, PIN5 to ready)
-		}
-		
-		sendBuffer[0] = SLAVE_ADDRESS; // set the slave address to the first element of the send buffer
-		TWI_MasterWriteRead(&twiMaster,
-		                    SLAVE_ADDRESS,
-		                    &sendBuffer[0],
-		                    0,  // write 0 bytes to slave address
-		                    4); // read 0 bytes from slave address
+	int i = 0;
+	for (i=0; i!=4; i++){
+		PORTA_OUT = twiMaster.readData[i];
+		_delay_ms(500);
+		PORTA_OUT = 0x00;
+		_delay_ms(500);
+	}	
+	*/
 
-		while (twiMaster.status != TWIM_STATUS_READY) {
-			// Wait until transaction is complete.
-		}
+	//while(1){
 		
-		// iterate through the receive buffer (4 bytes long);
-		// display 8 bits at a time for 500ms each on PORTA LEDS
-		int i = 0;
-		for (i=0; i<=3; i++){
-			//if (twiMaster.readData[i] != 0x00) breakflag = 1;
-			PORTA_OUT = twiMaster.readData[i];
-			_delay_ms(500);
-		}
-		
-	} /* execution loop */
+			TWI_MasterRead(&twiMaster, SLAVE_ADDRESS, 4);
+			while (twiMaster.status != TWIM_STATUS_READY) {}; // Wait until transaction is complete.
+			
+			int i = 0;
+			for (i=0; i!=4; i++){
+				PORTA_OUT = twiMaster.readData[i];
+				_delay_ms(500);
+				PORTA_OUT = 0x00;
+				_delay_ms(500);
+			}
+
+	//} /* execution loop */
 }
 
 /*! TWIC Master Interrupt vector. */
@@ -154,7 +134,3 @@ ISR(TWIC_TWIM_vect){
 	TWI_MasterInterruptHandler(&twiMaster);
 }
 
-/*! TWIC Slave Interrupt vector. */
-ISR(TWIC_TWIS_vect){
-	TWI_SlaveInterruptHandler(&twiSlave);
-}

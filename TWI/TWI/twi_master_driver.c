@@ -246,6 +246,46 @@ bool TWI_MasterWriteRead(TWI_Master_t *twi,
 }
 
 
+void ReadFromSensor(TWI_Master_t *twi,
+					uint8_t address){
+						
+	if (twi->status == TWIM_STATUS_READY) {
+		twi->bytesToWrite = 0;
+		twi->bytesToRead = 1;
+		twi->bytesWritten = 0;
+		twi->bytesRead = 0;
+
+		//if (twi->status == TWIM_STATUS_READY) {
+
+		twi->status = TWIM_STATUS_BUSY;
+		twi->result = TWIM_RESULT_UNKNOWN;
+
+		twi->address = address<<1;
+
+		// Send the START condition + Address + 'R/W = 1'
+		uint8_t readAddress = twi->address | 0x01;
+		twi->interface->MASTER.ADDR = readAddress;
+		
+		while (twi->status != TWIM_STATUS_READY);
+		PORTA_OUT = 0xF1;
+		_delay_ms(500);
+		
+		// ACK
+		twi->interface->MASTER.CTRLC = TWI_MASTER_CMD_RECVTRANS_gc;
+
+	
+		//while(twi->status != TWIM_STATUS_READY);
+		// Issue NACK and STOP condition	
+		twi->interface->MASTER.CTRLC = TWI_MASTER_ACKACT_bm |
+		TWI_MASTER_CMD_STOP_gc;
+		TWI_MasterTransactionFinished(twi, TWIM_RESULT_OK);
+	}
+	return;
+}
+
+
+
+
 /*! \brief Common TWI master interrupt service routine.
  *
  *  Check current status and calls the appropriate handler.
@@ -303,6 +343,7 @@ void TWI_MasterArbitrationLostBusErrorHandler(TWI_Master_t *twi)
 	twi->interface->MASTER.STATUS = currentStatus | TWI_MASTER_ARBLOST_bm;
 
 	twi->status = TWIM_STATUS_READY;
+	
 }
 
 
@@ -355,13 +396,16 @@ void TWI_MasterWriteHandler(TWI_Master_t *twi)
  *
  *  \param twi The TWI_Master_t struct instance.
  */
-void TWI_MasterReadHandler(TWI_Master_t *twi)
-{
+void TWI_MasterReadHandler(TWI_Master_t *twi){
+
 	/* Fetch data if bytes to be read. */
 	if (twi->bytesRead < TWIM_READ_BUFFER_SIZE) {
+		char temp = PORTC_DIR; // added
+		PORTC_DIR = 0x00; // added
 		uint8_t data = twi->interface->MASTER.DATA;
 		twi->readData[twi->bytesRead] = data;
 		twi->bytesRead++;
+		PORTC_DIR = temp; // added
 	}
 
 	/* If buffer overflow, issue STOP and BUFFER_OVERFLOW condition. */
@@ -394,8 +438,7 @@ void TWI_MasterReadHandler(TWI_Master_t *twi)
  *  \param twi     The TWI_Master_t struct instance.
  *  \param result  The result of the operation.
  */
-void TWI_MasterTransactionFinished(TWI_Master_t *twi, uint8_t result)
-{
+void TWI_MasterTransactionFinished(TWI_Master_t *twi, uint8_t result){
 	twi->result = result;
 	twi->status = TWIM_STATUS_READY;
 }

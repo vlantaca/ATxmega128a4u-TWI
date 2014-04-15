@@ -105,7 +105,6 @@ typedef struct TWI_Master {
 }TWI_Master_t;
 
 
-
 void TWI_MasterInit(TWI_Master_t *twi,
                     TWI_t *module,
                     TWI_MASTER_INTLVL_t intLevel,
@@ -130,6 +129,7 @@ void TWI_MasterWriteHandler(TWI_Master_t *twi);
 void TWI_MasterReadHandler(TWI_Master_t *twi);
 void TWI_MasterTransactionFinished(TWI_Master_t *twi, uint8_t result);
 
+void ReadFromSensor(TWI_Master_t *twi, uint8_t address);
 
 /*! TWI master interrupt service routine.
  *
