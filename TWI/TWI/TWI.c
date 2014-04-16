@@ -55,6 +55,7 @@
 #include "twi_master_driver.h"
 #include "twi_slave_driver.h"
 #include <util/delay.h>
+#include "TC_driver.h"
 
 /*! Defining an example slave address. */
 #define SLAVE_ADDRESS    0b00101000
@@ -72,6 +73,63 @@ TWI_Master_t twiMaster;    /*!< TWI master module. */
 
 /*! Buffer with test data to send.*/
 uint8_t sendBuffer[NUM_BYTES] = {0xCA, 0xFE, 0xBA, 0xBE};
+
+
+
+/***************************************************************************************************
+* Temp
+***************************************************************************************************/
+void Example4( void )
+{
+	uint16_t compareValue = 0x0000;
+	uint16_t baseFrequency = 1352; // 1360 kHz
+	uint16_t desiredFrequency = 20; // how many Kilo Hertz dost thou desire?
+	uint16_t periodValue = baseFrequency/desiredFrequency;
+	
+	compareValue = periodValue/2;
+	/* Enable output on PC0. */
+	PORTD.DIR = 0x01;
+
+	/* Set the TC period. */
+	//TC_SetPeriod( &TCD0, 0x0002 );
+	//TC_SetCompareA( &TCD0, 0x0001 );
+	
+	
+	periodValue = 101;
+	TC_SetPeriod( &TCD0, periodValue );
+	TC_SetCompareA( &TCD0, periodValue/2 );
+	
+	/* Configure the TC for single slope mode. */
+	TC0_ConfigWGM( &TCD0, TC_WGMODE_SS_gc );
+
+	/* Enable Compare channel A. */
+	TC0_EnableCCChannels( &TCD0, TC0_CCAEN_bm );
+
+	/* Start timer by selecting a clock source. */
+	TC0_ConfigClockSource( &TCD0, TC_CLKSEL_DIV1_gc );
+	do {
+		/* Calculate new compare value. */
+		//compareValue += 32;
+
+		/* Output new compare value. */
+		//TC_SetCompareA( &TCD0, 0x0001 );
+
+		do {
+			/*  Wait for the new compare value to be latched
+			 *  from CCABUF[H:L] to CCA[H:L]. This happens at
+			 *  TC overflow (UPDATE ).
+			 */
+		} while( TC_GetOverflowFlag( &TCD0 ) == 0 );
+
+		/* Clear overflow flag. */
+		TC_ClearOverflowFlag( &TCD0 );
+
+	} while (1);
+}
+
+
+
+
 
 
 
@@ -114,7 +172,7 @@ int main(void){
 	*/
 
 	//while(1){
-		
+			/*
 			TWI_MasterRead(&twiMaster, SLAVE_ADDRESS, 4);
 			while (twiMaster.status != TWIM_STATUS_READY) {}; // Wait until transaction is complete.
 			
@@ -125,7 +183,10 @@ int main(void){
 				PORTA_OUT = 0x00;
 				_delay_ms(500);
 			}
-
+			*/
+			
+			Example4();
+			
 	//} /* execution loop */
 }
 
@@ -133,4 +194,5 @@ int main(void){
 ISR(TWIC_TWIM_vect){
 	TWI_MasterInterruptHandler(&twiMaster);
 }
+
 

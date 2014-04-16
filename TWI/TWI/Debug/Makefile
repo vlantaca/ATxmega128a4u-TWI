@@ -36,6 +36,7 @@ SUBDIRS :=
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
+../TC_driver.c \
 ../TWI.c \
 ../twi_master_driver.c \
 ../twi_slave_driver.c
@@ -48,21 +49,25 @@ ASM_SRCS +=
 
 
 OBJS +=  \
+TC_driver.o \
 TWI.o \
 twi_master_driver.o \
 twi_slave_driver.o
 
 OBJS_AS_ARGS +=  \
+TC_driver.o \
 TWI.o \
 twi_master_driver.o \
 twi_slave_driver.o
 
 C_DEPS +=  \
+TC_driver.d \
 TWI.d \
 twi_master_driver.d \
 twi_slave_driver.d
 
 C_DEPS_AS_ARGS +=  \
+TC_driver.d \
 TWI.d \
 twi_master_driver.d \
 twi_slave_driver.d
@@ -78,6 +83,8 @@ OUTPUT_FILE_DEP:= ./makedep.mk
 LIB_DEP+= 
 
 # AVR32/GNU C Compiler
+
+
 
 
 
