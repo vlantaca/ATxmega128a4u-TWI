@@ -94,7 +94,6 @@ void Example4( void )
 	//TC_SetPeriod( &TCD0, 0x0002 );
 	//TC_SetCompareA( &TCD0, 0x0001 );
 	
-	
 	periodValue = 101;
 	TC_SetPeriod( &TCD0, periodValue );
 	TC_SetCompareA( &TCD0, periodValue/2 );
@@ -107,13 +106,25 @@ void Example4( void )
 
 	/* Start timer by selecting a clock source. */
 	TC0_ConfigClockSource( &TCD0, TC_CLKSEL_DIV1_gc );
+	int output_sel = 0;
+	int counter = 0;
 	do {
 		/* Calculate new compare value. */
 		//compareValue += 32;
 
 		/* Output new compare value. */
 		//TC_SetCompareA( &TCD0, 0x0001 );
-
+		if (counter == 2500){
+			if (output_sel == 1){
+				output_sel = 0;
+				TC_SetCompareA( &TCD0, 0 );
+			}else{
+				output_sel = 1;
+				TC_SetCompareA( &TCD0, periodValue/2 );
+			}
+			counter = 0;
+		}
+		
 		do {
 			/*  Wait for the new compare value to be latched
 			 *  from CCABUF[H:L] to CCA[H:L]. This happens at
@@ -123,6 +134,8 @@ void Example4( void )
 
 		/* Clear overflow flag. */
 		TC_ClearOverflowFlag( &TCD0 );
+		counter++;
+		//_delay_ms(2000);
 
 	} while (1);
 }
