@@ -73,12 +73,42 @@ TWI_Master_t twiMaster;    /*!< TWI master module. */
 
 /*! Buffer with test data to send.*/
 //uint8_t sendBuffer[NUM_BYTES] = {0xCA, 0xFE, 0xBA, 0xBE}; // <--- for future communication with iPhone
+	
+
+#define TIMER_PERIOD 101 // I don't where 101 is from.
+
+void send_high_manchester ( ) {
+	TC_ClearOverflowFlag(&TCD0);
+	TC_SetCompareA(&TCD0,0);
+	while(TC_GetOverflowFlag(&TCD0) == 0);
+	TC_ClearOverflowFlag(&TCD0);
+	TC_SetCompareA(&TCD0,TIMER_PERIOD/2);
+	while(TC_GetOverflowFlag(&TCD0) == 0);
+	TC_ClearOverflowFlag(&TCD0);
+}
+
+void send_low_manchester ( ) {
+	TC_ClearOverflowFlag(&TCD0);
+	TC_SetCompareA(&TCD0,TIMER_PERIOD/2);
+	while(TC_GetOverflowFlag(&TCD0) == 0);
+	TC_ClearOverflowFlag(&TCD0);
+	TC_SetCompareA(&TCD0,0);
+	while(TC_GetOverflowFlag(&TCD0) == 0);
+	TC_ClearOverflowFlag(&TCD0);
+}
+
+void send_byte ( const unsigned char bits ) {
+	unsigned char mask = 0x01;
+	int i;
+	for (i=0; 8 > i ;++i) {
+		if (bits & (mask << i)) send_high_manchester();
+		else send_low_manchester();
+	}
+}
 
 
 int main(void){
 	
-	PORTA_DIR = 0xFF; // Set PORTA to be an output for LEDS
-
 	// Use the internal pullup resistors on PORTC's TWI Ports
 	// Comment out the two lines below if you want to use your own pullup resistors (I recommend using 4.7k)
 	PORTCFG.MPCMASK = 0x03; // Configure several PINxCTRL registers at the same time
@@ -94,40 +124,16 @@ int main(void){
 	PMIC.CTRL |= PMIC_LOLVLEN_bm; // PMIC controls the handling and prioritizing of interrupt requests
 	sei(); // enables interrupts
 
-	// Read 4 bytes of data from the I2C slave, (Chip Cap 2)
-	TWI_MasterRead(&twiMaster, SLAVE_ADDRESS, 4);
-	while (twiMaster.status != TWIM_STATUS_READY) {}; // Wait until transaction is complete.
-			
-	// Iterate through the bytes received, display the received data on the LEDS
-	int i = 0;
-	for (i=0; i!=4; i++){
-		PORTA_OUT = twiMaster.readData[i];
-		_delay_ms(500);
-		PORTA_OUT = 0x00;
-		_delay_ms(500);
-	}
-
-
-	
 	/*********************************************************************************************
 	* Do some initializations for using PWM
 	*********************************************************************************************/
-	uint16_t baseFrequency = 1352; // 1360 kHz (determined imperically)
-	uint16_t desiredFrequency = 20; // how many Kilo Hertz dost thou desire?
-	uint16_t periodValue = baseFrequency/desiredFrequency; // period value for PWM
-	uint16_t compareValue = periodValue/2; // compare value for PWM
+	//uint16_t baseFrequency = 1352; // 1360 kHz (determined imperically)
+	//uint16_t desiredFrequency = 20; // how many Kilo Hertz dost thou desire?
+	//uint16_t periodValue = baseFrequency/desiredFrequency; // period value for PWM
+	//uint16_t compareValue = periodValue/2; // compare value for PWM
 	
 	// Enable output on PortD0
 	PORTD.DIR = 0x01;
-	
-	
-	/* Set the TC period. */
-	//TC_SetPeriod( &TCD0, 0x0002 );
-	//TC_SetCompareA( &TCD0, 0x0001 );
-	
-	periodValue = 101;
-	TC_SetPeriod( &TCD0, periodValue );
-	TC_SetCompareA( &TCD0, periodValue/2 );
 	
 	/* Configure the TC for single slope mode. */
 	TC0_ConfigWGM( &TCD0, TC_WGMODE_SS_gc );
@@ -137,43 +143,16 @@ int main(void){
 
 	/* Start timer by selecting a clock source. */
 	TC0_ConfigClockSource( &TCD0, TC_CLKSEL_DIV1_gc );
-	int output_sel = 0;
-	int counter = 0;
 	
+	TC_SetPeriod(&TCD0,TIMER_PERIOD);
 	
 	// Main execution loop
-	while(1){ 	
-			
-		/* Calculate new compare value. */
-		//compareValue += 32;
-
-		/* Output new compare value. */
-		//TC_SetCompareA( &TCD0, 0x0001 );
-		
-		if (counter == 2500){ //this value determines the frequency of amplitude modulation
-
-			if (output_sel == 1){ // turn output off (amplitude = 0)
-				output_sel = 0;
-				TC_SetCompareA( &TCD0, 0 );
-			}else{ // turn output on (amplitude = Vcc)
-				output_sel = 1;
-				TC_SetCompareA( &TCD0, periodValue/2 );
-			}
-			counter = 0;
+	while(1){
+		TWI_MasterRead(&twiMaster,SLAVE_ADDRESS,TWIM_READ_BUFFER_SIZE);         // Begin a TWI transaction.
+		while (twiMaster.status != TWIM_STATUS_READY);                          // Wait until transaction completes.
+		for (i=0; TWIM_READ_BUFFER_SIZE >= i ;++i) {                            // Iterate through the results.
+			send_byte(twiMaster.readData[i]);                                   // Send the data using Manchester encoding.
 		}
-		
-
-		/************************************************
-	    *  Wait for the new compare value to be latched
-		*  from CCABUF[H:L] to CCA[H:L]. This happens at
-		*  TC overflow (UPDATE ).
-		************************************************/
-		while( TC_GetOverflowFlag( &TCD0 ) == 0 ){};
-
-		/* Clear overflow flag. */
-		TC_ClearOverflowFlag( &TCD0 );
-		counter++;
-
 	} /* execution loop */
 }
 
