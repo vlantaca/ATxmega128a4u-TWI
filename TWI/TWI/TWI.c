@@ -79,6 +79,11 @@ int main(void){
 	
 	PORTA_DIR = 0xFF; // Set PORTA to be an output for LEDS
 
+	// Use the internal pullup resistors on PORTC's TWI Ports
+	// Comment out the two lines below if you want to use your own pullup resistors (I recommend using 4.7k)
+	PORTCFG.MPCMASK = 0x03; // Configure several PINxCTRL registers at the same time
+	PORTC.PIN0CTRL = (PORTC.PIN0CTRL & ~PORT_OPC_gm) | PORT_OPC_PULLUP_gc; //Enable pull-up 
+
 	/* Initialize TWI master. */
 	TWI_MasterInit(&twiMaster,
 	               &TWIC,
