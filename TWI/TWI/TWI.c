@@ -61,7 +61,7 @@
 #define SLAVE_ADDRESS    0b00101000
 
 /*! Defining number of bytes in buffer. */
-#define NUM_BYTES        4
+//#define NUM_BYTES        4
 
 /*! CPU speed 2MHz, BAUDRATE 100kHz and Baudrate Register Settings */
 #define CPU_SPEED   2000000
@@ -72,24 +72,50 @@
 TWI_Master_t twiMaster;    /*!< TWI master module. */
 
 /*! Buffer with test data to send.*/
-uint8_t sendBuffer[NUM_BYTES] = {0xCA, 0xFE, 0xBA, 0xBE};
+//uint8_t sendBuffer[NUM_BYTES] = {0xCA, 0xFE, 0xBA, 0xBE}; // <--- for future communication with iPhone
 
 
-
-/***************************************************************************************************
-* Temp
-***************************************************************************************************/
-void Example4( void )
-{
-	uint16_t compareValue = 0x0000;
-	uint16_t baseFrequency = 1352; // 1360 kHz
-	uint16_t desiredFrequency = 20; // how many Kilo Hertz dost thou desire?
-	uint16_t periodValue = baseFrequency/desiredFrequency;
+int main(void){
 	
-	compareValue = periodValue/2;
-	/* Enable output on PC0. */
-	PORTD.DIR = 0x01;
+	PORTA_DIR = 0xFF; // Set PORTA to be an output for LEDS
 
+	/* Initialize TWI master. */
+	TWI_MasterInit(&twiMaster,
+	               &TWIC,
+	               TWI_MASTER_INTLVL_LO_gc,
+	               TWI_BAUDSETTING);
+
+	/* Enable LO interrupt level. */
+	PMIC.CTRL |= PMIC_LOLVLEN_bm; // PMIC controls the handling and prioritizing of interrupt requests
+	sei(); // enables interrupts
+
+	// Read 4 bytes of data from the I2C slave, (Chip Cap 2)
+	TWI_MasterRead(&twiMaster, SLAVE_ADDRESS, 4);
+	while (twiMaster.status != TWIM_STATUS_READY) {}; // Wait until transaction is complete.
+			
+	// Iterate through the bytes received, display the received data on the LEDS
+	int i = 0;
+	for (i=0; i!=4; i++){
+		PORTA_OUT = twiMaster.readData[i];
+		_delay_ms(500);
+		PORTA_OUT = 0x00;
+		_delay_ms(500);
+	}
+
+
+	
+	/*********************************************************************************************
+	* Do some initializations for using PWM
+	*********************************************************************************************/
+	uint16_t baseFrequency = 1352; // 1360 kHz (determined imperically)
+	uint16_t desiredFrequency = 20; // how many Kilo Hertz dost thou desire?
+	uint16_t periodValue = baseFrequency/desiredFrequency; // period value for PWM
+	uint16_t compareValue = periodValue/2; // compare value for PWM
+	
+	// Enable output on PortD0
+	PORTD.DIR = 0x01;
+	
+	
 	/* Set the TC period. */
 	//TC_SetPeriod( &TCD0, 0x0002 );
 	//TC_SetCompareA( &TCD0, 0x0001 );
@@ -108,99 +134,42 @@ void Example4( void )
 	TC0_ConfigClockSource( &TCD0, TC_CLKSEL_DIV1_gc );
 	int output_sel = 0;
 	int counter = 0;
-	do {
+	
+	
+	// Main execution loop
+	while(1){ 	
+			
 		/* Calculate new compare value. */
 		//compareValue += 32;
 
 		/* Output new compare value. */
 		//TC_SetCompareA( &TCD0, 0x0001 );
-		if (counter == 2500){
-			if (output_sel == 1){
+		
+		if (counter == 2500){ //this value determines the frequency of amplitude modulation
+
+			if (output_sel == 1){ // turn output off (amplitude = 0)
 				output_sel = 0;
 				TC_SetCompareA( &TCD0, 0 );
-			}else{
+			}else{ // turn output on (amplitude = Vcc)
 				output_sel = 1;
 				TC_SetCompareA( &TCD0, periodValue/2 );
 			}
 			counter = 0;
 		}
 		
-		do {
-			/*  Wait for the new compare value to be latched
-			 *  from CCABUF[H:L] to CCA[H:L]. This happens at
-			 *  TC overflow (UPDATE ).
-			 */
-		} while( TC_GetOverflowFlag( &TCD0 ) == 0 );
+
+		/************************************************
+	    *  Wait for the new compare value to be latched
+		*  from CCABUF[H:L] to CCA[H:L]. This happens at
+		*  TC overflow (UPDATE ).
+		************************************************/
+		while( TC_GetOverflowFlag( &TCD0 ) == 0 ){};
 
 		/* Clear overflow flag. */
 		TC_ClearOverflowFlag( &TCD0 );
 		counter++;
-		//_delay_ms(2000);
 
-	} while (1);
-}
-
-
-
-
-
-
-
-/*! /brief Example code
- *
- *  Example code that reads the key pressed and show a value from the buffer,
- *  sends the value to the slave and read back the processed value which will
- *  be inverted and displayed after key release.
- */
-int main(void){
-	/* Initialize PORTE for output and PORTD for inverted input. */
-	
-	PORTA_DIR = 0xFF; // Set PORTA to be an output for LEDS
-	
-	//Enable internal pull-up on PC0, PC1.. Uncomment if you don't have external pullups
-	//PORTCFG.MPCMASK = 0x03; // Configure several PINxCTRL registers at the same time
-	//PORTC.PIN0CTRL = (PORTC.PIN0CTRL & ~PORT_OPC_gm) | PORT_OPC_PULLUP_gc; //Enable pull-up to get a defined level on the switches
-
-	/* Initialize TWI master. */
-	TWI_MasterInit(&twiMaster,
-	               &TWIC,
-	               TWI_MASTER_INTLVL_LO_gc,
-	               TWI_BAUDSETTING);
-
-	/* Enable LO interrupt level. */
-	PMIC.CTRL |= PMIC_LOLVLEN_bm; // PMIC controls the handling and prioritizing of interrupt requests    <----------
-	sei(); // enables interrupts   <-----------
-	
-	PORTA_DIR = 0xFF;
-	/*
-	ReadFromSensor(&twiMaster, SLAVE_ADDRESS);
-	
-	int i = 0;
-	for (i=0; i!=4; i++){
-		PORTA_OUT = twiMaster.readData[i];
-		_delay_ms(500);
-		PORTA_OUT = 0x00;
-		_delay_ms(500);
-	}	
-	*/
-
-	//while(1){
-			/*
-			TWI_MasterRead(&twiMaster, SLAVE_ADDRESS, 4);
-			while (twiMaster.status != TWIM_STATUS_READY) {}; // Wait until transaction is complete.
-			
-			int i = 0;
-			for (i=0; i!=4; i++){
-				PORTA_OUT = twiMaster.readData[i];
-				_delay_ms(500);
-				PORTA_OUT = 0x00;
-				_delay_ms(500);
-			}
-			*/
-			
-			Example4();
-			
-	//} /* execution loop */
+	} /* execution loop */
 }
 
 /*! TWIC Master Interrupt vector. */
