@@ -57,47 +57,56 @@
 #include <util/delay.h>
 #include "TC_driver.h"
 
-/*! Defining an example slave address. */
 #define SLAVE_ADDRESS    0b00101000
 
-/*! Defining number of bytes in buffer. */
-//#define NUM_BYTES        4
-
-/*! CPU speed 2MHz, BAUDRATE 100kHz and Baudrate Register Settings */
-#define CPU_SPEED   2000000
+#define CPU_SPEED   2000000  // Hz
 #define BAUDRATE	100000
 #define TWI_BAUDSETTING TWI_BAUD(CPU_SPEED, BAUDRATE)
 
+#define AM_FREQUENCY         20000  // Hz
+#define MANCHESTER_FREQUENCY 1000   // Hz
+
+#define TIMER_PERIOD CPU_SPEED/AM_FREQUENCY
+#define PULSE_COUNT  AM_FREQUENCY/(2*MANCHESTER_FREQUENCY)
+
 /* Global variables */
-TWI_Master_t twiMaster;    /*!< TWI master module. */
+TWI_Master_t twiMaster;
+/**/
 
-/*! Buffer with test data to send.*/
-//uint8_t sendBuffer[NUM_BYTES] = {0xCA, 0xFE, 0xBA, 0xBE}; // <--- for future communication with iPhone
-	
-
-#define TIMER_PERIOD 101 // I don't where 101 is from.
 
 void send_high_manchester ( ) {
-	TC_ClearOverflowFlag(&TCD0);
+	int c;
 	TC_SetCompareA(&TCD0,0);
-	while(TC_GetOverflowFlag(&TCD0) == 0);
-	TC_ClearOverflowFlag(&TCD0);
+	for (c=0; PULSE_COUNT > c ;++c) {
+		TC_ClearOverflowFlag(&TCD0);
+		while(TC_GetOverflowFlag(&TCD0) == 0);
+	}
 	TC_SetCompareA(&TCD0,TIMER_PERIOD/2);
-	while(TC_GetOverflowFlag(&TCD0) == 0);
+	for (c=0; PULSE_COUNT > c ;++c) {
+		TC_ClearOverflowFlag(&TCD0);
+		while(TC_GetOverflowFlag(&TCD0) == 0);
+	}
 	TC_ClearOverflowFlag(&TCD0);
 }
+
 
 void send_low_manchester ( ) {
-	TC_ClearOverflowFlag(&TCD0);
+	int c;
 	TC_SetCompareA(&TCD0,TIMER_PERIOD/2);
-	while(TC_GetOverflowFlag(&TCD0) == 0);
-	TC_ClearOverflowFlag(&TCD0);
+	for (c=0; PULSE_COUNT > c ;++c) {
+		TC_ClearOverflowFlag(&TCD0);
+		while(TC_GetOverflowFlag(&TCD0) == 0);
+	}
 	TC_SetCompareA(&TCD0,0);
-	while(TC_GetOverflowFlag(&TCD0) == 0);
+	for (c=0; PULSE_COUNT > c ;++c) {
+		TC_ClearOverflowFlag(&TCD0);
+		while(TC_GetOverflowFlag(&TCD0) == 0);
+	}
 	TC_ClearOverflowFlag(&TCD0);
 }
 
-void send_byte ( const unsigned char bits ) {
+
+void send_byte_manchester ( const unsigned char bits ) {
 	unsigned char mask = 0x01;
 	int i;
 	for (i=0; 8 > i ;++i) {
@@ -109,56 +118,49 @@ void send_byte ( const unsigned char bits ) {
 
 int main(void){
 	
-	// Use the internal pullup resistors on PORTC's TWI Ports
-	// Comment out the two lines below if you want to use your own pullup resistors (I recommend using 4.7k)
-	PORTCFG.MPCMASK = 0x03; // Configure several PINxCTRL registers at the same time
-	PORTC.PIN0CTRL = (PORTC.PIN0CTRL & ~PORT_OPC_gm) | PORT_OPC_PULLUP_gc; //Enable pull-up 
-
-	/* Initialize TWI master. */
-	TWI_MasterInit(&twiMaster,
-	               &TWIC,
-	               TWI_MASTER_INTLVL_LO_gc,
-	               TWI_BAUDSETTING);
-
-	/* Enable LO interrupt level. */
-	PMIC.CTRL |= PMIC_LOLVLEN_bm; // PMIC controls the handling and prioritizing of interrupt requests
-	sei(); // enables interrupts
-
-	/*********************************************************************************************
-	* Do some initializations for using PWM
-	*********************************************************************************************/
-	//uint16_t baseFrequency = 1352; // 1360 kHz (determined imperically)
-	//uint16_t desiredFrequency = 20; // how many Kilo Hertz dost thou desire?
-	//uint16_t periodValue = baseFrequency/desiredFrequency; // period value for PWM
-	//uint16_t compareValue = periodValue/2; // compare value for PWM
 	
-	// Enable output on PortD0
-	PORTD.DIR = 0x01;
+	/* Comment out the 3 lines below if you want to use
+	   your own pull-up resistors (I recommend using 4.7k).
+	*/
+	PORTCFG.MPCMASK = 0x03;                                     // Configure several PINxCTRL registers.
+	PORTC.PIN0CTRL =\
+		(PORTC.PIN0CTRL & ~PORT_OPC_gm) | PORT_OPC_PULLUP_gc;   // Use the internal pull-up resistors on PORTC's TWI Ports.
+
+	TWI_MasterInit(
+		&twiMaster,
+		&TWIC,
+		TWI_MASTER_INTLVL_LO_gc,
+		TWI_BAUDSETTING
+	);
+
+	PMIC.CTRL |= PMIC_LOLVLEN_bm;                               // Enable LO interrupt level.
+	sei();                                                      // Enable interrupts.
 	
-	/* Configure the TC for single slope mode. */
-	TC0_ConfigWGM( &TCD0, TC_WGMODE_SS_gc );
-
-	/* Enable Compare channel A. */
-	TC0_EnableCCChannels( &TCD0, TC0_CCAEN_bm );
-
-	/* Start timer by selecting a clock source. */
-	TC0_ConfigClockSource( &TCD0, TC_CLKSEL_DIV1_gc );
+	PORTD.DIR = 0x01;                                           // Enable output on PortD0
+	
+	TC0_ConfigWGM(&TCD0,TC_WGMODE_SS_gc);                       // Configure single slope mode.
+	TC0_EnableCCChannels(&TCD0,TC0_CCAEN_bm);                   // Enable compare channel A.
+	TC0_ConfigClockSource(&TCD0,TC_CLKSEL_DIV1_gc);             // Start the timer by setting a clock source.
 	
 	TC_SetPeriod(&TCD0,TIMER_PERIOD);
+	TC_SetCompareA(&TCD0,TIMER_PERIOD/2);
 	
-	// Main execution loop
-	while(1){
-		TWI_MasterRead(&twiMaster,SLAVE_ADDRESS,TWIM_READ_BUFFER_SIZE);         // Begin a TWI transaction.
-		while (twiMaster.status != TWIM_STATUS_READY);                          // Wait until transaction completes.
-		for (i=0; TWIM_READ_BUFFER_SIZE >= i ;++i) {                            // Iterate through the results.
-			send_byte(twiMaster.readData[i]);                                   // Send the data using Manchester encoding.
+	while (1) {
+		TWI_MasterRead(
+			&twiMaster,
+			SLAVE_ADDRESS,
+			TWIM_READ_BUFFER_SIZE
+		);                                                      // Begin a TWI transaction.
+		while (twiMaster.status != TWIM_STATUS_READY);          // Wait until the transaction completes.
+		int i;
+		for (i=TWIM_READ_BUFFER_SIZE-1; 0 <= i ;--i) {          // Iterate through the results.
+			send_byte_manchester(twiMaster.readData[i]);        // Send the data using Manchester encoding.
 		}
-	} /* execution loop */
+	}
 }
+
 
 /*! TWIC Master Interrupt vector. */
 ISR(TWIC_TWIM_vect){
 	TWI_MasterInterruptHandler(&twiMaster);
 }
-
-
