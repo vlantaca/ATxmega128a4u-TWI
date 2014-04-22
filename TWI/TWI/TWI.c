@@ -145,13 +145,18 @@ int main(void){
 	TC_SetPeriod(&TCD0,TIMER_PERIOD);
 	TC_SetCompareA(&TCD0,TIMER_PERIOD/2);
 	
+	twiMaster.readData[0] = 0x00;
+	twiMaster.readData[1] = 0x00;
+	twiMaster.readData[2] = 0x00;
+	twiMaster.readData[3] = 0x00;
+	
 	while (1) {
-		TWI_MasterRead(
+		/*TWI_MasterRead(
 			&twiMaster,
 			SLAVE_ADDRESS,
 			TWIM_READ_BUFFER_SIZE
-		);                                                      // Begin a TWI transaction.
-		while (twiMaster.status != TWIM_STATUS_READY);          // Wait until the transaction completes.
+		);*/                                                      // Begin a TWI transaction.
+		//while (twiMaster.status != TWIM_STATUS_READY);          // Wait until the transaction completes.
 		int i;
 		for (i=TWIM_READ_BUFFER_SIZE-1; 0 <= i ;--i) {          // Iterate through the results.
 			send_byte_manchester(twiMaster.readData[i]);        // Send the data using Manchester encoding.
