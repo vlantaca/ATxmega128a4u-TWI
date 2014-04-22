@@ -74,35 +74,45 @@ TWI_Master_t twiMaster;
 /**/
 
 
-void send_high_manchester ( ) {
+void send_high ( ) {
+	int c;
+	TC_SetCompareA(&TCD0,TIMER_PERIOD/2);
+	for (c=0; PULSE_COUNT > c ;++c) {
+		TC_ClearOverflowFlag(&TCD0);
+		while(TC_GetOverflowFlag(&TCD0) == 0);
+	}
+}
+
+
+void send_low ( ) {
 	int c;
 	TC_SetCompareA(&TCD0,0);
 	for (c=0; PULSE_COUNT > c ;++c) {
 		TC_ClearOverflowFlag(&TCD0);
 		while(TC_GetOverflowFlag(&TCD0) == 0);
 	}
-	TC_SetCompareA(&TCD0,TIMER_PERIOD/2);
-	for (c=0; PULSE_COUNT > c ;++c) {
-		TC_ClearOverflowFlag(&TCD0);
-		while(TC_GetOverflowFlag(&TCD0) == 0);
+}
+
+
+void send_byte ( const unsigned char bits ) {
+	unsigned char mask = 0x01;
+	int i;
+	for (i=0; 8 > i ;++i) {
+		if (bits & (mask << i)) send_high();
+		else send_low();
 	}
-	TC_ClearOverflowFlag(&TCD0);
+}
+
+
+void send_high_manchester ( ) {
+	send_low();
+	send_high();
 }
 
 
 void send_low_manchester ( ) {
-	int c;
-	TC_SetCompareA(&TCD0,TIMER_PERIOD/2);
-	for (c=0; PULSE_COUNT > c ;++c) {
-		TC_ClearOverflowFlag(&TCD0);
-		while(TC_GetOverflowFlag(&TCD0) == 0);
-	}
-	TC_SetCompareA(&TCD0,0);
-	for (c=0; PULSE_COUNT > c ;++c) {
-		TC_ClearOverflowFlag(&TCD0);
-		while(TC_GetOverflowFlag(&TCD0) == 0);
-	}
-	TC_ClearOverflowFlag(&TCD0);
+	send_high();
+	send_low();
 }
 
 
