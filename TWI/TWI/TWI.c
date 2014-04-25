@@ -57,120 +57,130 @@
 #include <util/delay.h>
 #include "TC_driver.h"
 
-#define SLAVE_ADDRESS    0b00101000
+#define SLAVE_ADDRESS 0b00101000
 
-#define CPU_SPEED   2000000  // Hz
-#define BAUDRATE	100000
-#define TWI_BAUDSETTING TWI_BAUD(CPU_SPEED, BAUDRATE)
+#define CPU_SPEED 2000000  // Hz
+#define BAUDRATE   100000  // baud
 
-#define AM_FREQUENCY         20000  // Hz
-#define MANCHESTER_FREQUENCY 1000   // Hz
+#define SEND_DC    0x00
+#define SEND_AC_AM 0x01
+#define SEND_AC_FM 0x02
 
-#define TIMER_PERIOD CPU_SPEED/AM_FREQUENCY
-#define PULSE_COUNT  AM_FREQUENCY/(2*MANCHESTER_FREQUENCY)
+#define FREQUENCY          1000  // Hz
+#define FREQUENCY_AM      20000  // Hz
+#define FREQUENCY_FM_HIGH 10000  // Hz
+#define FREQUENCY_FM_LOW  FREQUENCY_FM_HIGH/2  // Hz
 
-/* Global variables */
+#define PULSES(frequency) frequency/(2*FREQUENCY)
+
+#define ENCODE_MANCHESTER 1  // [0,1]
+
 TWI_Master_t twiMaster;
-/**/
 
 
-void send_high ( ) {
-	int c;
-	TC_SetCompareA(&TCD0,TIMER_PERIOD/2);
-	for (c=0; PULSE_COUNT > c ;++c) {
-		TC_ClearOverflowFlag(&TCD0);
-		while(TC_GetOverflowFlag(&TCD0) == 0);
-	}
+void timer_pulse ( ) {
+    TC_ClearOverflowFlag(&TCD0);                                                          // Ensure terminal count is not falsely indicated.
+    while(TC_GetOverflowFlag(&TCD0) == 0);                                                // Wait for the timer to reach terminal count.
 }
 
 
-void send_low ( ) {
-	int c;
-	TC_SetCompareA(&TCD0,0);
-	for (c=0; PULSE_COUNT > c ;++c) {
-		TC_ClearOverflowFlag(&TCD0);
-		while(TC_GetOverflowFlag(&TCD0) == 0);
-	}
+void send_bit_DC ( const unsigned int bit ) {
+    unsigned int period = CPU_SPEED/FREQUENCY;
+    TC_SetPeriod(&TCD0,period);                                                           // Set the timer period with respect to the desired AM frequency.
+    if (bit) TC_SetCompareA(&TCD0,period);                                                // Implement DC by using full duty cycle.
+    else     TC_SetCompareA(&TCD0,0);                                                     // Implement logic low as GND (no duty cycle).
+    int i;
+    for (i=0; PULSES(FREQUENCY) > i ;++i) timer_pulse();                                  // Count pulses in order to control the frequency correctly.
 }
 
 
-void send_byte ( const unsigned char bits ) {
-	unsigned char mask = 0x01;
-	int i;
-	for (i=0; 8 > i ;++i) {
-		if (bits & (mask << i)) send_high();
-		else send_low();
-	}
+void send_bit_AC_AM ( const unsigned int bit ) {
+    unsigned int period = CPU_SPEED/FREQUENCY_AM;
+    TC_SetPeriod(&TCD0,period);                                                           // Set the timer period with respect to the desired AM frequency.
+    if (bit) TC_SetCompareA(&TCD0,period/2);                                              // Implement AC by using half duty cycle.
+    else     TC_SetCompareA(&TCD0,0);                                                     // Implement logic low as GND (no duty cycle).
+    int i;
+    for (i=0; PULSES(FREQUENCY_AM) > i ;++i) timer_pulse();                               // Count pulses in order to control the frequency correctly.
 }
 
 
-void send_high_manchester ( ) {
-	send_low();
-	send_high();
+void send_bit_AC_FM ( const unsigned int bit ) {
+    unsigned int frequency = (bit) ? FREQUENCY_FM_HIGH : FREQUENCY_FM_LOW;                // Determine whether to send a logic high or logic low.
+    unsigned int period = CPU_SPEED/frequency;                                            // Calculate the the timer period with respect to the desired FM frequency.
+    TC_SetPeriod(&TCD0,period);                                                           // Set the timer period.
+    TC_SetCompareA(&TCD0,period/2);                                                       // Implement AC by using half duty cycle.
+    int i;
+    for (i=0; PULSES(frequency) > i ;++i) timer_pulse();                                  // Count pulses in order to control the frequency correctly.
 }
 
 
-void send_low_manchester ( ) {
-	send_high();
-	send_low();
+void send_bit ( const unsigned int bit , const unsigned char flags ) {
+    void (*send_bit_method)(unsigned int);
+    switch (flags) {
+        case 0x00: send_bit_method = send_bit_DC;    break;                               // Send a DC bit.
+        case 0x01: send_bit_method = send_bit_AC_AM; break;                               // Send an AM bit.
+        case 0x02: send_bit_method = send_bit_AC_FM; break;                               // Send an FM bit.
+        case 0x03:                                                                        // Simultaneous AM/FM is overkill for transmitting a single signal.
+        default:
+            return; // Error
+    }
+    if (ENCODE_MANCHESTER) send_bit_method(!bit);                                         // Manchester encoding -> (0 == 10 && 1 == 01). The 1st bit is the negation of the 2nd.
+    send_bit_method(bit);                                                                 // Send the bit.
 }
 
 
-void send_byte_manchester ( const unsigned char bits ) {
-	unsigned char mask = 0x01;
-	int i;
-	for (i=0; 8 > i ;++i) {
-		if (bits & (mask << i)) send_high_manchester();
-		else send_low_manchester();
-	}
+void send_byte ( const unsigned char bits , const unsigned char flags ) {
+    unsigned char mask = 0x01;
+    int i;
+    for (i=0; 8 > i ;++i) {
+        unsigned int bit = bits & (mask << i);                                            // Use a bitmask to determine the value of each bit to be sent.
+        send_bit(bit,flags);                                                              // Send the bit.
+    }
 }
 
 
-int main(void){
-	
-	
-	/* Comment out the 3 lines below if you want to use
-	   your own pull-up resistors (I recommend using 4.7k).
-	*/
-	PORTCFG.MPCMASK = 0x03;                                     // Configure several PINxCTRL registers.
-	PORTC.PIN0CTRL =\
-		(PORTC.PIN0CTRL & ~PORT_OPC_gm) | PORT_OPC_PULLUP_gc;   // Use the internal pull-up resistors on PORTC's TWI Ports.
+int main (void) {
+    
+    
+    /* Comment out the 3 lines below if you want to use
+       your own pull-up resistors (I recommend using 4.7k).
+    */
+    PORTCFG.MPCMASK = 0x03;                                                               // Configure several PINxCTRL registers.
+    PORTC.PIN0CTRL =\
+        (PORTC.PIN0CTRL & ~PORT_OPC_gm) | PORT_OPC_PULLUP_gc;                             // Use the internal pull-up resistors on PORTC's TWI Ports.
 
-	TWI_MasterInit(
-		&twiMaster,
-		&TWIC,
-		TWI_MASTER_INTLVL_LO_gc,
-		TWI_BAUDSETTING
-	);
+    TWI_MasterInit(
+        &twiMaster,
+        &TWIC,
+        TWI_MASTER_INTLVL_LO_gc,
+        TWI_BAUD(CPU_SPEED,BAUDRATE)
+    );
 
-	PMIC.CTRL |= PMIC_LOLVLEN_bm;                               // Enable LO interrupt level.
-	sei();                                                      // Enable interrupts.
-	
-	PORTD.DIR = 0x01;                                           // Enable output on PortD0
-	
-	TC0_ConfigWGM(&TCD0,TC_WGMODE_SS_gc);                       // Configure single slope mode.
-	TC0_EnableCCChannels(&TCD0,TC0_CCAEN_bm);                   // Enable compare channel A.
-	TC0_ConfigClockSource(&TCD0,TC_CLKSEL_DIV1_gc);             // Start the timer by setting a clock source.
-	
-	TC_SetPeriod(&TCD0,TIMER_PERIOD);
-	TC_SetCompareA(&TCD0,TIMER_PERIOD/2);
-	
-	while (1) {
-		TWI_MasterRead(
-			&twiMaster,
-			SLAVE_ADDRESS,
-			TWIM_READ_BUFFER_SIZE
-		);                                                      // Begin a TWI transaction.
-		while (twiMaster.status != TWIM_STATUS_READY);          // Wait until the transaction completes.
-		int i;
-		for (i=TWIM_READ_BUFFER_SIZE-1; 0 <= i ;--i) {          // Iterate through the results.
-			send_byte_manchester(twiMaster.readData[i]);        // Send the data using Manchester encoding.
-		}
-	}
+    PMIC.CTRL |= PMIC_LOLVLEN_bm;                                                         // Enable LO interrupt level.
+    sei();                                                                                // Enable interrupts.
+    
+    PORTD.DIR = 0x01;                                                                     // Enable output on PortD0
+    
+    TC0_ConfigWGM(&TCD0,TC_WGMODE_SS_gc);                                                 // Configure single slope mode.
+    TC0_EnableCCChannels(&TCD0,TC0_CCAEN_bm);                                             // Enable compare channel A.
+    TC0_ConfigClockSource(&TCD0,TC_CLKSEL_DIV1_gc);                                       // Start the timer by setting a clock source.
+    
+    while (1) {
+        TWI_MasterRead(
+            &twiMaster,
+            SLAVE_ADDRESS,
+            TWIM_READ_BUFFER_SIZE
+        );                                                                                // Begin a TWI transaction.
+        while (twiMaster.status != TWIM_STATUS_READY);                                    // Wait until the transaction completes.
+        int i;
+        for (i=TWIM_READ_BUFFER_SIZE-1; 0 <= i ;--i) {                                    // Iterate through the results.
+            send_byte(twiMaster.readData[i],SEND_AC_FM);                                  // Send the data using FM with Manchester encoding.
+        }
+    }
 }
 
 
 /*! TWIC Master Interrupt vector. */
 ISR(TWIC_TWIM_vect){
-	TWI_MasterInterruptHandler(&twiMaster);
+    TWI_MasterInterruptHandler(&twiMaster);
 }
