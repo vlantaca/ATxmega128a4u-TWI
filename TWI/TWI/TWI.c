@@ -63,8 +63,8 @@
 #define BAUDRATE	100000
 #define TWI_BAUDSETTING TWI_BAUD(CPU_SPEED, BAUDRATE)
 
-#define AM_FREQUENCY         20000  // Hz
-#define MANCHESTER_FREQUENCY 1000   // Hz
+#define AM_FREQUENCY         2000  // Hz
+#define MANCHESTER_FREQUENCY 100   // Hz
 
 #define TIMER_PERIOD CPU_SPEED/AM_FREQUENCY
 #define PULSE_COUNT  AM_FREQUENCY/(2*MANCHESTER_FREQUENCY)
@@ -159,19 +159,48 @@ int main(void){
 	twiMaster.readData[1] = 0x00;
 	twiMaster.readData[2] = 0x00;
 	twiMaster.readData[3] = 0x00;
+
+	int i, j, k;
+/*
+	// Clear input buffer to iPhone with
+	for (i = 0; i < 10; i++) {
+		send_low();		
+	}
+	*/
+	// Start edge
+	/*for (j = 0; j < 100; j++) {
+		send_high();
+	}
 	
-	while (1) {
+	//while (1) {
+		// Data
+		send_high_manchester();
+		send_low_manchester();
+		send_low_manchester();
+		send_low_manchester();
+		send_high_manchester();
+	//}
+	
+	// Clear input buffer to iPhone with for end of transmission
+	for (k = 0; k < 3; k++) {
+		send_low();
+	}
+	
+	//while (1) {
 		/*TWI_MasterRead(
 			&twiMaster,
 			SLAVE_ADDRESS,
 			TWIM_READ_BUFFER_SIZE
-		);*/                                                      // Begin a TWI transaction.
-		//while (twiMaster.status != TWIM_STATUS_READY);          // Wait until the transaction completes.
+		);                                                      // Begin a TWI transaction.
+		while (twiMaster.status != TWIM_STATUS_READY);          // Wait until the transaction completes.
+													
 		int i;
 		for (i=TWIM_READ_BUFFER_SIZE-1; 0 <= i ;--i) {          // Iterate through the results.
 			send_byte_manchester(twiMaster.readData[i]);        // Send the data using Manchester encoding.
 		}
-	}
+		*/
+	//}
+	send_high();
 }
 
 
