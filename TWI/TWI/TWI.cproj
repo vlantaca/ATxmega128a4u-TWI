@@ -98,7 +98,19 @@
     <Compile Include="avr_compiler.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="clksys_driver.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="clksys_driver.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="documentation.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="My_ADC.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="My_ADC.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="TC_driver.c">
