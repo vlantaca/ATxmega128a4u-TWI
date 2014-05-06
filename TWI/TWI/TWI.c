@@ -222,9 +222,9 @@ int main(void){
 			sei();
 		}
 
-		//test = adc_result - 0x09FF;
-		test = adc_result - 0x0550;
-		//adc_result -= 0x09FF;
+		//test = adc_result - 0x0550; //600-700mV threshold
+		test = adc_result - 0x0384; ///400mv
+		//test = adc_result - 0x0960; //1.2v
 
 		if (test > 0x0000){
 			silence_count = 0;
