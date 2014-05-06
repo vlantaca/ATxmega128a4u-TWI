@@ -140,6 +140,8 @@ int main(void){
 	int output_sel = 0;
 	int counter = 0;
 	
+
+//int x = 0;
 	
 	// Main execution loop
 	while(1){ 	
