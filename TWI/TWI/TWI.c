@@ -69,7 +69,7 @@ uint8_t result_flag = 0;
 #define TWI_BAUDSETTING TWI_BAUD(CPU_SPEED, BAUDRATE)
 
 #define AM_FREQUENCY         15000  // Hz
-#define MANCHESTER_FREQUENCY 15     // Hz
+#define MANCHESTER_FREQUENCY 25     // Hz
 
 #define TIMER_PERIOD CPU_SPEED/AM_FREQUENCY
 #define PULSE_COUNT  AM_FREQUENCY/(2*MANCHESTER_FREQUENCY)
@@ -173,25 +173,27 @@ int main(void){
 
 	TC_SetPeriod(&TCD0,TIMER_PERIOD);
 	TC_SetCompareA(&TCD0,TIMER_PERIOD/2);
-
+	
+	/* **************************************
+	 * DEBUG: Known packet values to confirm
+	 *        communication is working.
+	 */
 	twiMaster.readData[0] = 0xDE;
 	twiMaster.readData[1] = 0xAD;
 	twiMaster.readData[2] = 0xBE;
 	twiMaster.readData[3] = 0xEF;
+	/* ***************************************/
+	
+	int i;
+	int checkSum = 0;
 
-	int i;//, j;
-
-	// Clear input stream to iPhone then send start edge
-	for (i = 0; i < 3; i++) {
-		send_low();		
-	}
-	send_high();
-
+	// Initialize ADC
 	adc_init();
 	PORTB_DIR = 0xFF;
 	PORTA_DIR = 0x00;
 
-	uint16_t pot_val = 0x0000;
+	//uint16_t pot_val = 0x0000;	// Commented out because it's not being used
+									// TALK with Vincent to determine if it is necessary
 	uint16_t temp_result = 0x0000;
 	uint8_t over_sample_num = 0x00;
 	int test = 0;
@@ -212,7 +214,7 @@ int main(void){
 			over_sample_num++;
 			temp_result += adc_result;
 			if(over_sample_num == 30) {
-				pot_val = temp_result/over_sample_num;
+				//pot_val = temp_result/over_sample_num;
 				temp_result = 0;
 				over_sample_num = 0;
 			}
@@ -239,23 +241,57 @@ int main(void){
 		}
 
 		if (output_on == 1){
+			// Disable interrupts to send packet
 			cli();
 			
+			/* **************************************
+			 * DEBUG: writes a one to Port B0 when
+			 *        the ADC value is past the high
+			 *        threshold
+			 */
 			PORTB_OUT = 0x01;
-
-			for (i=TWIM_READ_BUFFER_SIZE-1; 0 <= i ;--i) {          // Iterate through the results.
-				_delay_ms(1);
-				//send_byte_manchester(twiMaster.readData[i]);        // Send the data using Manchester encoding.
+			/***************************************/
+			
+			// Reset and then create packet checksum
+			checkSum = 0;
+			for (i = 0; i < 4; i++) {
+				unsigned char mask = 0x01;
+				int j;
+				for (j=0; j < 8 ;j++) {
+					if (twiMaster.readData[i] & (mask << j))
+						checkSum += 1;
+				}
 			}
-		
+			
+			// Clear input stream to iPhone then send start edge
+			for (i = 0; i < 3; i++) {
+				send_low();
+			}
+			send_high();
+			
+			// Send data
+			for (i=TWIM_READ_BUFFER_SIZE-1; 0 <= i ;--i) {          // Iterate through the results.
+				send_byte_manchester(twiMaster.readData[i]);      // Send the data using Manchester encoding.
+			}
+			
+			// Send checksum
+			send_byte_manchester(checkSum);
+			
 			// Clear input buffer to iPhone with
 			for (i = 0; i < 3; i++) {
-				_delay_ms(1);
-				//send_low();
+				send_low();
 			}
+			
+			// Enable interrupts to check ADC
 			sei();
 		}else{
-			PORTB_OUT = 0x00;	
+			/* **************************************
+			 * DEBUG: writes a zero to Port B0 when
+			 *        the ADC value is below the high
+			 *        threshold
+			 */
+			PORTB_OUT = 0x00;
+			/* *************************************/	
 		}
 	}
 }
