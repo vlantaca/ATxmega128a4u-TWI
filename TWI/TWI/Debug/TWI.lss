@@ -3,33 +3,33 @@ TWI.elf:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .text         00000534  00000000  00000000  00000094  2**1
+  0 .text         000005c8  00000000  00000000  00000094  2**1
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  1 .data         00000000  00802000  00000534  000005c8  2**0
+  1 .data         00000000  00802000  000005c8  0000065c  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  2 .bss          00000015  00802000  00802000  000005c8  2**0
+  2 .bss          00000018  00802000  00802000  0000065c  2**0
                   ALLOC
-  3 .stab         00000714  00000000  00000000  000005c8  2**2
+  3 .stab         00000714  00000000  00000000  0000065c  2**2
                   CONTENTS, READONLY, DEBUGGING
-  4 .stabstr      00000097  00000000  00000000  00000cdc  2**0
+  4 .stabstr      00000097  00000000  00000000  00000d70  2**0
                   CONTENTS, READONLY, DEBUGGING
-  5 .comment      0000002f  00000000  00000000  00000d73  2**0
+  5 .comment      0000002f  00000000  00000000  00000e07  2**0
                   CONTENTS, READONLY
-  6 .debug_aranges 000001f0  00000000  00000000  00000da2  2**0
+  6 .debug_aranges 00000288  00000000  00000000  00000e36  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_info   0000334f  00000000  00000000  00000f92  2**0
+  7 .debug_info   000043a4  00000000  00000000  000010be  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_abbrev 000007da  00000000  00000000  000042e1  2**0
+  8 .debug_abbrev 00000b76  00000000  00000000  00005462  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_line   00000f5e  00000000  00000000  00004abb  2**0
+  9 .debug_line   00001482  00000000  00000000  00005fd8  2**0
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_frame  00000448  00000000  00000000  00005a1c  2**2
+ 10 .debug_frame  00000594  00000000  00000000  0000745c  2**2
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_str    000016a8  00000000  00000000  00005e64  2**0
+ 11 .debug_str    000021a3  00000000  00000000  000079f0  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_loc    00000f9b  00000000  00000000  0000750c  2**0
+ 12 .debug_loc    0000141a  00000000  00000000  00009b93  2**0
                   CONTENTS, READONLY, DEBUGGING
- 13 .debug_ranges 000001b0  00000000  00000000  000084a7  2**0
+ 13 .debug_ranges 00000228  00000000  00000000  0000afad  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -61,7 +61,7 @@ Disassembly of section .text:
   2e:	00 00       	nop
   30:	fb c0       	rjmp	.+502    	; 0x228 <__bad_interrupt>
   32:	00 00       	nop
-  34:	ad c1       	rjmp	.+858    	; 0x390 <__vector_13>
+  34:	f7 c1       	rjmp	.+1006   	; 0x424 <__vector_13>
   36:	00 00       	nop
   38:	f7 c0       	rjmp	.+494    	; 0x228 <__bad_interrupt>
   3a:	00 00       	nop
@@ -177,7 +177,7 @@ Disassembly of section .text:
  116:	00 00       	nop
  118:	87 c0       	rjmp	.+270    	; 0x228 <__bad_interrupt>
  11a:	00 00       	nop
- 11c:	85 c0       	rjmp	.+266    	; 0x228 <__bad_interrupt>
+ 11c:	e5 c0       	rjmp	.+458    	; 0x2e8 <__vector_71>
  11e:	00 00       	nop
  120:	83 c0       	rjmp	.+262    	; 0x228 <__bad_interrupt>
  122:	00 00       	nop
@@ -314,550 +314,906 @@ Disassembly of section .text:
  21c:	1d 92       	st	X+, r1
 
 0000021e <.do_clear_bss_start>:
- 21e:	a5 31       	cpi	r26, 0x15	; 21
+ 21e:	a8 31       	cpi	r26, 0x18	; 24
  220:	b2 07       	cpc	r27, r18
  222:	e1 f7       	brne	.-8      	; 0x21c <.do_clear_bss_loop>
- 224:	5c d0       	rcall	.+184    	; 0x2de <main>
- 226:	84 c1       	rjmp	.+776    	; 0x530 <_exit>
+ 224:	88 d0       	rcall	.+272    	; 0x336 <main>
+ 226:	ce c1       	rjmp	.+924    	; 0x5c4 <_exit>
 
 00000228 <__bad_interrupt>:
  228:	eb ce       	rjmp	.-554    	; 0x0 <__vectors>
 
-0000022a <TC0_ConfigClockSource>:
- 22a:	fc 01       	movw	r30, r24
- 22c:	20 81       	ld	r18, Z
- 22e:	20 7f       	andi	r18, 0xF0	; 240
- 230:	62 2b       	or	r22, r18
- 232:	60 83       	st	Z, r22
- 234:	08 95       	ret
+0000022a <ReadCalibrationByte>:
+}
 
-00000236 <TC0_ConfigWGM>:
- 236:	fc 01       	movw	r30, r24
- 238:	21 81       	ldd	r18, Z+1	; 0x01
- 23a:	28 7f       	andi	r18, 0xF8	; 248
- 23c:	62 2b       	or	r22, r18
- 23e:	61 83       	std	Z+1, r22	; 0x01
- 240:	08 95       	ret
+uint8_t ReadCalibrationByte(uint8_t index) {
+	
+	uint8_t result;
+	NVM_CMD = NVM_CMD_READ_CALIB_ROW_gc;
+ 22a:	aa ec       	ldi	r26, 0xCA	; 202
+ 22c:	b1 e0       	ldi	r27, 0x01	; 1
+ 22e:	92 e0       	ldi	r25, 0x02	; 2
+ 230:	9c 93       	st	X, r25
+	result = pgm_read_byte(index);
+ 232:	e8 2f       	mov	r30, r24
+ 234:	f0 e0       	ldi	r31, 0x00	; 0
+ 236:	84 91       	lpm	r24, Z
+	
+	NVM_CMD = NVM_CMD_NO_OPERATION_gc;
+ 238:	1c 92       	st	X, r1
+	
+	return(result);
+ 23a:	08 95       	ret
 
-00000242 <TC0_EnableCCChannels>:
- 242:	fc 01       	movw	r30, r24
- 244:	21 81       	ldd	r18, Z+1	; 0x01
- 246:	60 7f       	andi	r22, 0xF0	; 240
- 248:	62 2b       	or	r22, r18
- 24a:	61 83       	std	Z+1, r22	; 0x01
- 24c:	08 95       	ret
+0000023c <adc_init>:
+// These 2 files need to be included in order to read
+// the production calibration values from EEPROM
+#include <avr/pgmspace.h>
+#include <stddef.h>
 
-0000024e <send_high>:
+void adc_init(void) {
+ 23c:	cf 93       	push	r28
+ 23e:	df 93       	push	r29
+	
+	// ADC Clock was disabled initially in sysclk_init()
+	// Must re-activate the ADC clock before configuring its registers (we're using ADCA)
+	PR.PRPA &= ~0x02; // Clear ADC bit in Power Reduction Port A Register
+ 240:	e0 e7       	ldi	r30, 0x70	; 112
+ 242:	f0 e0       	ldi	r31, 0x00	; 0
+ 244:	81 81       	ldd	r24, Z+1	; 0x01
+ 246:	8d 7f       	andi	r24, 0xFD	; 253
+ 248:	81 83       	std	Z+1, r24	; 0x01
+	
+	// Calibration values are stored at production time
+	// Load stored bytes into the calibration registers
+	// First NVM read is junk and must be thrown away
+	ADCA.CALL = ReadCalibrationByte( offsetof(NVM_PROD_SIGNATURES_t, ADCACAL0) );
+ 24a:	80 e2       	ldi	r24, 0x20	; 32
+ 24c:	ee df       	rcall	.-36     	; 0x22a <ReadCalibrationByte>
+ 24e:	c0 e0       	ldi	r28, 0x00	; 0
+ 250:	d2 e0       	ldi	r29, 0x02	; 2
+ 252:	8c 87       	std	Y+12, r24	; 0x0c
+	ADCA.CALH = ReadCalibrationByte( offsetof(NVM_PROD_SIGNATURES_t, ADCACAL1) );
+ 254:	81 e2       	ldi	r24, 0x21	; 33
+ 256:	e9 df       	rcall	.-46     	; 0x22a <ReadCalibrationByte>
+ 258:	8d 87       	std	Y+13, r24	; 0x0d
+	ADCA.CALL = ReadCalibrationByte( offsetof(NVM_PROD_SIGNATURES_t, ADCACAL0) );
+ 25a:	80 e2       	ldi	r24, 0x20	; 32
+ 25c:	e6 df       	rcall	.-52     	; 0x22a <ReadCalibrationByte>
+ 25e:	8c 87       	std	Y+12, r24	; 0x0c
+	ADCA.CALH = ReadCalibrationByte( offsetof(NVM_PROD_SIGNATURES_t, ADCACAL1) );
+ 260:	81 e2       	ldi	r24, 0x21	; 33
+ 262:	e3 df       	rcall	.-58     	; 0x22a <ReadCalibrationByte>
+ 264:	8d 87       	std	Y+13, r24	; 0x0d
+	//     7        6       5        4        3        2       1       0
+	// | START  |   -   |   -   |         GAIN[2:0]        | INPUTMODE[1:0] |
+	//     0        0       0        0        0        0       0       0
+	// Place ADC channel in single-ended mode
+	// Gain set to 1
+	ADCA.CH0.CTRL = ADC_CH_INPUTMODE0_bm; // 0x01
+ 266:	81 e0       	ldi	r24, 0x01	; 1
+ 268:	88 a3       	std	Y+32, r24	; 0x20
+	//     7        6       5        4        3        2       1       0
+	// |   -    |           MUXPOS[3:0]             |     MUXNEG[2:0]     |
+	//     0        0       0        0        0        0       0       0
+	// Connect potentiometer (PB1) to positive input
+	// MUXNEG bits are ignored in single-ended mode
+	ADCA.CH0.MUXCTRL = ADC_CH_MUXINT0_bm; // 0x08
+ 26a:	98 e0       	ldi	r25, 0x08	; 8
+ 26c:	99 a3       	std	Y+33, r25	; 0x21
+	//     0        0       0         0         0         0       0        0
+	// Apply no limit to ADC sample rate
+	// Put ADC in signed mode
+	// Disable Free-run mode (single conversion upon trigger)
+	// Resolution set to 12-bit, right justified (11-bit effective in signed mode)
+	ADCA.CTRLA = ADC_CONMODE_bm; // 0x10
+ 26e:	90 e1       	ldi	r25, 0x10	; 16
+ 270:	98 83       	st	Y, r25
+	// The ADC runs off of the CPU_per clock
+	// In sys_clk_init() the internal 2MHz RC osc was used to source a 16 MHz PLL
+	// The PLL is then divided using Prescalers A, B, and C setting CPU_per to 8 MHz
+	// According to AVR1300, the ADC clock should run in the range 100 kHz ~ approx 1.4 MHz
+	// Set ADC clock to 125kHz:  CPU_per/64    =>    8MHz/64 = 125kHz
+	ADCA.PRESCALER = ADC_PRESCALER2_bm; // 0x04
+ 272:	24 e0       	ldi	r18, 0x04	; 4
+ 274:	2c 83       	std	Y+4, r18	; 0x04
+	// |   -   |      REFSEL[2:0]      |   -   |   -   | BANDGAP | TEMPREF |
+	//     0       0       0       0       0       0        0         0
+	// Set Vref to Vcc/1.6.  This gives 3.3/1.6 = approx 2.06V
+	// With effectively 11-bit resolution, this means each LSB 
+	// will represent approximately 1 mV.
+	ADCA.REFCTRL = ADC_REFSEL0_bm; // 0x10
+ 276:	9a 83       	std	Y+2, r25	; 0x02
+	//ADCA.EVCTRL
+	//     7       6       5       4       3       2       1       0
+	// |   -   |   -   |   -   |   EVSEL[1:0]  |      EVACT[2:0]       |
+	//     0       0       0       0       0       0       0       0
+	// Not implementing Event System so ensure EVCTRL is reading zeros
+	ADCA.EVCTRL = 0x00;
+ 278:	1b 82       	std	Y+3, r1	; 0x03
+	//ADCA.INTFLAGS
+	//     7       6       5       4       3       2       1       0
+	// |   -   |   -   |   -   |   -   |   -   |   -   |   -   | CH0IF |
+	//     0       0       0       0       0       0       0       0
+	// Ensure the ADC complete flag is cleared (by writing a '1' to it)
+	ADCA.INTFLAGS = ADC_CH0IF_bm; // 0x01
+ 27a:	8e 83       	std	Y+6, r24	; 0x06
+	//ADCA.CH0.INTCTRL
+	//     7       6       5       4        3       2       1       0
+	// |   -   |   -   |   -   |   -   |  INTMODE[1:0]  |  INTLVL[1:0]  |
+	//     0       0       0       0        0       0       0       0
+	// Configure interrupt on conversion complete with high priority
+	ADCA.CH0.INTCTRL = ADC_CH_INTLVL1_bm | ADC_CH_INTLVL0_bm; // 0x03
+ 27c:	93 e0       	ldi	r25, 0x03	; 3
+ 27e:	9a a3       	std	Y+34, r25	; 0x22
+	//ADCA.CTRLA
+	//     7       6       5       4       3         2        1        0
+	// |   -   |   -   |   -   |   -   |   -   | CH0START | FLUSH | ENABLE |
+	//     0       0       0       0       0         0        0        0
+	// Enable ADC, module B
+	ADCA.CTRLA = ADC_ENABLE_bm; // 0x01
+ 280:	88 83       	st	Y, r24
+	//////////////////////////////////////////////////////////////////////
+}
+ 282:	df 91       	pop	r29
+ 284:	cf 91       	pop	r28
+ 286:	08 95       	ret
+
+00000288 <TC0_ConfigClockSource>:
+ *  \param tc               Timer/Counter module instance.
+ *  \param eventSource      Event source selection.
+ */
+void TC1_ConfigInputCapture( volatile TC1_t * tc, TC_EVSEL_t eventSource )
+{
+	tc->CTRLD = ( tc->CTRLD & ~( TC1_EVSEL_gm | TC1_EVACT_gm ) ) |
+ 288:	fc 01       	movw	r30, r24
+ 28a:	20 81       	ld	r18, Z
+ 28c:	20 7f       	andi	r18, 0xF0	; 240
+ 28e:	62 2b       	or	r22, r18
+ 290:	60 83       	st	Z, r22
+ 292:	08 95       	ret
+
+00000294 <TC0_ConfigWGM>:
+ 294:	fc 01       	movw	r30, r24
+ 296:	21 81       	ldd	r18, Z+1	; 0x01
+ 298:	28 7f       	andi	r18, 0xF8	; 248
+ 29a:	62 2b       	or	r22, r18
+ 29c:	61 83       	std	Z+1, r22	; 0x01
+ 29e:	08 95       	ret
+
+000002a0 <TC0_EnableCCChannels>:
+{
+	/* Make sure only CCxEN bits are set in enableMask. */
+	enableMask &= ( TC0_CCAEN_bm | TC0_CCBEN_bm | TC0_CCCEN_bm | TC0_CCDEN_bm );
+
+	/* Enable channels. */
+	tc->CTRLB |= enableMask;
+ 2a0:	fc 01       	movw	r30, r24
+ 2a2:	21 81       	ldd	r18, Z+1	; 0x01
+ *  \param enableMask       Mask of channels to enable.
+ */
+void TC0_EnableCCChannels( volatile TC0_t * tc, uint8_t enableMask )
+{
+	/* Make sure only CCxEN bits are set in enableMask. */
+	enableMask &= ( TC0_CCAEN_bm | TC0_CCBEN_bm | TC0_CCCEN_bm | TC0_CCDEN_bm );
+ 2a4:	60 7f       	andi	r22, 0xF0	; 240
+
+	/* Enable channels. */
+	tc->CTRLB |= enableMask;
+ 2a6:	62 2b       	or	r22, r18
+ 2a8:	61 83       	std	Z+1, r22	; 0x01
+ 2aa:	08 95       	ret
+
+000002ac <send_high>:
 	int i;
 	for (i=0; 8 > i ;++i) {
-		if (bits & (mask << i)) send_high();
-		else send_low();
+		if (bits & (mask << i)) send_high_manchester();
+		else send_low_manchester();
 	}
 }
- 24e:	82 e4       	ldi	r24, 0x42	; 66
- 250:	90 e0       	ldi	r25, 0x00	; 0
- 252:	e0 e0       	ldi	r30, 0x00	; 0
- 254:	f9 e0       	ldi	r31, 0x09	; 9
- 256:	80 af       	std	Z+56, r24	; 0x38
- 258:	91 af       	std	Z+57, r25	; 0x39
- 25a:	8c e2       	ldi	r24, 0x2C	; 44
- 25c:	91 e0       	ldi	r25, 0x01	; 1
- 25e:	31 e0       	ldi	r19, 0x01	; 1
- 260:	34 87       	std	Z+12, r19	; 0x0c
- 262:	24 85       	ldd	r18, Z+12	; 0x0c
- 264:	20 ff       	sbrs	r18, 0
- 266:	fd cf       	rjmp	.-6      	; 0x262 <send_high+0x14>
- 268:	01 97       	sbiw	r24, 0x01	; 1
- 26a:	d1 f7       	brne	.-12     	; 0x260 <send_high+0x12>
- 26c:	08 95       	ret
+ 2ac:	82 e4       	ldi	r24, 0x42	; 66
+ 2ae:	90 e0       	ldi	r25, 0x00	; 0
+ 2b0:	e0 e0       	ldi	r30, 0x00	; 0
+ 2b2:	f9 e0       	ldi	r31, 0x09	; 9
+ 2b4:	80 af       	std	Z+56, r24	; 0x38
+ 2b6:	91 af       	std	Z+57, r25	; 0x39
+ 2b8:	84 ef       	ldi	r24, 0xF4	; 244
+ 2ba:	91 e0       	ldi	r25, 0x01	; 1
+ 2bc:	31 e0       	ldi	r19, 0x01	; 1
+ 2be:	34 87       	std	Z+12, r19	; 0x0c
+ 2c0:	24 85       	ldd	r18, Z+12	; 0x0c
+ 2c2:	20 ff       	sbrs	r18, 0
+ 2c4:	fd cf       	rjmp	.-6      	; 0x2c0 <send_high+0x14>
+ 2c6:	01 97       	sbiw	r24, 0x01	; 1
+ 2c8:	d1 f7       	brne	.-12     	; 0x2be <send_high+0x12>
+ 2ca:	08 95       	ret
 
-0000026e <send_low>:
- 26e:	e0 e0       	ldi	r30, 0x00	; 0
- 270:	f9 e0       	ldi	r31, 0x09	; 9
- 272:	10 ae       	std	Z+56, r1	; 0x38
- 274:	11 ae       	std	Z+57, r1	; 0x39
- 276:	8c e2       	ldi	r24, 0x2C	; 44
- 278:	91 e0       	ldi	r25, 0x01	; 1
- 27a:	31 e0       	ldi	r19, 0x01	; 1
- 27c:	34 87       	std	Z+12, r19	; 0x0c
- 27e:	24 85       	ldd	r18, Z+12	; 0x0c
- 280:	20 ff       	sbrs	r18, 0
- 282:	fd cf       	rjmp	.-6      	; 0x27e <send_low+0x10>
- 284:	01 97       	sbiw	r24, 0x01	; 1
- 286:	d1 f7       	brne	.-12     	; 0x27c <send_low+0xe>
- 288:	08 95       	ret
+000002cc <send_low>:
+ 2cc:	e0 e0       	ldi	r30, 0x00	; 0
+ 2ce:	f9 e0       	ldi	r31, 0x09	; 9
+ 2d0:	10 ae       	std	Z+56, r1	; 0x38
+ 2d2:	11 ae       	std	Z+57, r1	; 0x39
+ 2d4:	84 ef       	ldi	r24, 0xF4	; 244
+ 2d6:	91 e0       	ldi	r25, 0x01	; 1
+ 2d8:	31 e0       	ldi	r19, 0x01	; 1
+ 2da:	34 87       	std	Z+12, r19	; 0x0c
+ 2dc:	24 85       	ldd	r18, Z+12	; 0x0c
+ 2de:	20 ff       	sbrs	r18, 0
+ 2e0:	fd cf       	rjmp	.-6      	; 0x2dc <send_low+0x10>
+ 2e2:	01 97       	sbiw	r24, 0x01	; 1
+ 2e4:	d1 f7       	brne	.-12     	; 0x2da <send_low+0xe>
+ 2e6:	08 95       	ret
 
-0000028a <send_high_manchester>:
+000002e8 <__vector_71>:
 
 
-void send_high_manchester ( ) {
-	send_low();
- 28a:	f1 df       	rcall	.-30     	; 0x26e <send_low>
-	send_high();
- 28c:	e0 cf       	rjmp	.-64     	; 0x24e <send_high>
 
-0000028e <send_low_manchester>:
+
+ISR(ADCA_CH0_vect) {
+ 2e8:	1f 92       	push	r1
+ 2ea:	0f 92       	push	r0
+ 2ec:	0f b6       	in	r0, 0x3f	; 63
+ 2ee:	0f 92       	push	r0
+ 2f0:	11 24       	eor	r1, r1
+ 2f2:	08 b6       	in	r0, 0x38	; 56
+ 2f4:	0f 92       	push	r0
+ 2f6:	18 be       	out	0x38, r1	; 56
+ 2f8:	0b b6       	in	r0, 0x3b	; 59
+ 2fa:	0f 92       	push	r0
+ 2fc:	1b be       	out	0x3b, r1	; 59
+ 2fe:	8f 93       	push	r24
+ 300:	9f 93       	push	r25
+ 302:	ef 93       	push	r30
+ 304:	ff 93       	push	r31
+
+	adc_result = ADCA.CH0.RES;
+ 306:	e0 e0       	ldi	r30, 0x00	; 0
+ 308:	f2 e0       	ldi	r31, 0x02	; 2
+ 30a:	84 a1       	ldd	r24, Z+36	; 0x24
+ 30c:	95 a1       	ldd	r25, Z+37	; 0x25
+ 30e:	80 93 01 20 	sts	0x2001, r24
+ 312:	90 93 02 20 	sts	0x2002, r25
+	result_flag = 1;
+ 316:	81 e0       	ldi	r24, 0x01	; 1
+ 318:	80 93 00 20 	sts	0x2000, r24
+
+	// Interrupt flag is cleared upon return from ISR
 }
+ 31c:	ff 91       	pop	r31
+ 31e:	ef 91       	pop	r30
+ 320:	9f 91       	pop	r25
+ 322:	8f 91       	pop	r24
+ 324:	0f 90       	pop	r0
+ 326:	0b be       	out	0x3b, r0	; 59
+ 328:	0f 90       	pop	r0
+ 32a:	08 be       	out	0x38, r0	; 56
+ 32c:	0f 90       	pop	r0
+ 32e:	0f be       	out	0x3f, r0	; 63
+ 330:	0f 90       	pop	r0
+ 332:	1f 90       	pop	r1
+ 334:	18 95       	reti
+
+00000336 <main>:
 
 
-void send_low_manchester ( ) {
-	send_high();
- 28e:	df df       	rcall	.-66     	; 0x24e <send_high>
-	send_low();
- 290:	ee cf       	rjmp	.-36     	; 0x26e <send_low>
-
-00000292 <send_byte_manchester>:
-}
-
-
-void send_byte_manchester ( const unsigned char bits ) {
- 292:	ef 92       	push	r14
- 294:	ff 92       	push	r15
- 296:	0f 93       	push	r16
- 298:	1f 93       	push	r17
- 29a:	cf 93       	push	r28
- 29c:	df 93       	push	r29
-	unsigned char mask = 0x01;
-	int i;
-	for (i=0; 8 > i ;++i) {
- 29e:	c0 e0       	ldi	r28, 0x00	; 0
- 2a0:	d0 e0       	ldi	r29, 0x00	; 0
-		if (bits & (mask << i)) send_high_manchester();
- 2a2:	ee 24       	eor	r14, r14
- 2a4:	e3 94       	inc	r14
- 2a6:	f1 2c       	mov	r15, r1
- 2a8:	08 2f       	mov	r16, r24
- 2aa:	10 e0       	ldi	r17, 0x00	; 0
- 2ac:	97 01       	movw	r18, r14
- 2ae:	0c 2e       	mov	r0, r28
- 2b0:	02 c0       	rjmp	.+4      	; 0x2b6 <send_byte_manchester+0x24>
- 2b2:	22 0f       	add	r18, r18
- 2b4:	33 1f       	adc	r19, r19
- 2b6:	0a 94       	dec	r0
- 2b8:	e2 f7       	brpl	.-8      	; 0x2b2 <send_byte_manchester+0x20>
- 2ba:	20 23       	and	r18, r16
- 2bc:	31 23       	and	r19, r17
- 2be:	23 2b       	or	r18, r19
- 2c0:	11 f0       	breq	.+4      	; 0x2c6 <send_byte_manchester+0x34>
- 2c2:	e3 df       	rcall	.-58     	; 0x28a <send_high_manchester>
- 2c4:	01 c0       	rjmp	.+2      	; 0x2c8 <send_byte_manchester+0x36>
-		else send_low_manchester();
- 2c6:	e3 df       	rcall	.-58     	; 0x28e <send_low_manchester>
-
-
-void send_byte_manchester ( const unsigned char bits ) {
-	unsigned char mask = 0x01;
-	int i;
-	for (i=0; 8 > i ;++i) {
- 2c8:	21 96       	adiw	r28, 0x01	; 1
- 2ca:	c8 30       	cpi	r28, 0x08	; 8
- 2cc:	d1 05       	cpc	r29, r1
- 2ce:	71 f7       	brne	.-36     	; 0x2ac <send_byte_manchester+0x1a>
-		if (bits & (mask << i)) send_high_manchester();
-		else send_low_manchester();
-	}
-}
- 2d0:	df 91       	pop	r29
- 2d2:	cf 91       	pop	r28
- 2d4:	1f 91       	pop	r17
- 2d6:	0f 91       	pop	r16
- 2d8:	ff 90       	pop	r15
- 2da:	ef 90       	pop	r14
- 2dc:	08 95       	ret
-
-000002de <main>:
-	
-	
 	/* Comment out the 3 lines below if you want to use
 	   your own pull-up resistors (I recommend using 4.7k).
 	*/
 	PORTCFG.MPCMASK = 0x03;                                     // Configure several PINxCTRL registers.
- 2de:	83 e0       	ldi	r24, 0x03	; 3
- 2e0:	80 93 b0 00 	sts	0x00B0, r24
-	PORTC.PIN0CTRL =\
+ 336:	83 e0       	ldi	r24, 0x03	; 3
+ 338:	80 93 b0 00 	sts	0x00B0, r24
+	PORTC.PIN0CTRL =
 		(PORTC.PIN0CTRL & ~PORT_OPC_gm) | PORT_OPC_PULLUP_gc;   // Use the internal pull-up resistors on PORTC's TWI Ports.
- 2e4:	e0 e4       	ldi	r30, 0x40	; 64
- 2e6:	f6 e0       	ldi	r31, 0x06	; 6
- 2e8:	80 89       	ldd	r24, Z+16	; 0x10
-	
+ 33c:	e0 e4       	ldi	r30, 0x40	; 64
+ 33e:	f6 e0       	ldi	r31, 0x06	; 6
+ 340:	80 89       	ldd	r24, Z+16	; 0x10
+
 	/* Comment out the 3 lines below if you want to use
 	   your own pull-up resistors (I recommend using 4.7k).
 	*/
 	PORTCFG.MPCMASK = 0x03;                                     // Configure several PINxCTRL registers.
-	PORTC.PIN0CTRL =\
- 2ea:	87 7c       	andi	r24, 0xC7	; 199
- 2ec:	88 61       	ori	r24, 0x18	; 24
- 2ee:	80 8b       	std	Z+16, r24	; 0x10
+	PORTC.PIN0CTRL =
+ 342:	87 7c       	andi	r24, 0xC7	; 199
+ 344:	88 61       	ori	r24, 0x18	; 24
+ 346:	80 8b       	std	Z+16, r24	; 0x10
 		(PORTC.PIN0CTRL & ~PORT_OPC_gm) | PORT_OPC_PULLUP_gc;   // Use the internal pull-up resistors on PORTC's TWI Ports.
 
 	TWI_MasterInit(
- 2f0:	25 e0       	ldi	r18, 0x05	; 5
- 2f2:	40 e4       	ldi	r20, 0x40	; 64
- 2f4:	60 e8       	ldi	r22, 0x80	; 128
- 2f6:	74 e0       	ldi	r23, 0x04	; 4
- 2f8:	80 e0       	ldi	r24, 0x00	; 0
- 2fa:	90 e2       	ldi	r25, 0x20	; 32
- 2fc:	7d d0       	rcall	.+250    	; 0x3f8 <TWI_MasterInit>
-		&TWIC,
+ 348:	25 e0       	ldi	r18, 0x05	; 5
+ 34a:	40 e4       	ldi	r20, 0x40	; 64
+ 34c:	60 e8       	ldi	r22, 0x80	; 128
+ 34e:	74 e0       	ldi	r23, 0x04	; 4
+ 350:	83 e0       	ldi	r24, 0x03	; 3
+ 352:	90 e2       	ldi	r25, 0x20	; 32
+ 354:	9b d0       	rcall	.+310    	; 0x48c <TWI_MasterInit>
 		TWI_MASTER_INTLVL_LO_gc,
 		TWI_BAUDSETTING
 	);
 
-	PMIC.CTRL |= PMIC_LOLVLEN_bm;                               // Enable LO interrupt level.
- 2fe:	e0 ea       	ldi	r30, 0xA0	; 160
- 300:	f0 e0       	ldi	r31, 0x00	; 0
- 302:	82 81       	ldd	r24, Z+2	; 0x02
- 304:	81 60       	ori	r24, 0x01	; 1
- 306:	82 83       	std	Z+2, r24	; 0x02
+	//PMIC.CTRL |= PMIC_LOLVLEN_bm;                               // Enable LO interrupt level.
+	PMIC.CTRL = PMIC_HILVLEN_bm | PMIC_MEDLVLEN_bm | PMIC_LOLVLEN_bm; //0x07
+ 356:	87 e0       	ldi	r24, 0x07	; 7
+ 358:	e0 ea       	ldi	r30, 0xA0	; 160
+ 35a:	f0 e0       	ldi	r31, 0x00	; 0
+ 35c:	82 83       	std	Z+2, r24	; 0x02
 	sei();                                                      // Enable interrupts.
- 308:	78 94       	sei
-	
+ 35e:	78 94       	sei
+
 	PORTD.DIR = 0x01;                                           // Enable output on PortD0
- 30a:	81 e0       	ldi	r24, 0x01	; 1
- 30c:	80 93 60 06 	sts	0x0660, r24
-	
+ 360:	81 e0       	ldi	r24, 0x01	; 1
+ 362:	80 93 60 06 	sts	0x0660, r24
+
 	TC0_ConfigWGM(&TCD0,TC_WGMODE_SS_gc);                       // Configure single slope mode.
- 310:	63 e0       	ldi	r22, 0x03	; 3
- 312:	80 e0       	ldi	r24, 0x00	; 0
- 314:	99 e0       	ldi	r25, 0x09	; 9
- 316:	8f df       	rcall	.-226    	; 0x236 <TC0_ConfigWGM>
+ 366:	63 e0       	ldi	r22, 0x03	; 3
+ 368:	80 e0       	ldi	r24, 0x00	; 0
+ 36a:	99 e0       	ldi	r25, 0x09	; 9
+ 36c:	93 df       	rcall	.-218    	; 0x294 <TC0_ConfigWGM>
 	TC0_EnableCCChannels(&TCD0,TC0_CCAEN_bm);                   // Enable compare channel A.
- 318:	60 e1       	ldi	r22, 0x10	; 16
- 31a:	80 e0       	ldi	r24, 0x00	; 0
- 31c:	99 e0       	ldi	r25, 0x09	; 9
- 31e:	91 df       	rcall	.-222    	; 0x242 <TC0_EnableCCChannels>
+ 36e:	60 e1       	ldi	r22, 0x10	; 16
+ 370:	80 e0       	ldi	r24, 0x00	; 0
+ 372:	99 e0       	ldi	r25, 0x09	; 9
+ 374:	95 df       	rcall	.-214    	; 0x2a0 <TC0_EnableCCChannels>
 	TC0_ConfigClockSource(&TCD0,TC_CLKSEL_DIV1_gc);             // Start the timer by setting a clock source.
- 320:	61 e0       	ldi	r22, 0x01	; 1
- 322:	80 e0       	ldi	r24, 0x00	; 0
- 324:	99 e0       	ldi	r25, 0x09	; 9
- 326:	81 df       	rcall	.-254    	; 0x22a <TC0_ConfigClockSource>
-	
+ 376:	61 e0       	ldi	r22, 0x01	; 1
+ 378:	80 e0       	ldi	r24, 0x00	; 0
+ 37a:	99 e0       	ldi	r25, 0x09	; 9
+ 37c:	85 df       	rcall	.-246    	; 0x288 <TC0_ConfigClockSource>
+
 	TC_SetPeriod(&TCD0,TIMER_PERIOD);
- 328:	e0 e0       	ldi	r30, 0x00	; 0
- 32a:	f9 e0       	ldi	r31, 0x09	; 9
- 32c:	85 e8       	ldi	r24, 0x85	; 133
- 32e:	90 e0       	ldi	r25, 0x00	; 0
- 330:	86 a3       	std	Z+38, r24	; 0x26
- 332:	97 a3       	std	Z+39, r25	; 0x27
+ 37e:	e0 e0       	ldi	r30, 0x00	; 0
+ 380:	f9 e0       	ldi	r31, 0x09	; 9
+ 382:	85 e8       	ldi	r24, 0x85	; 133
+ 384:	90 e0       	ldi	r25, 0x00	; 0
+ 386:	86 a3       	std	Z+38, r24	; 0x26
+ 388:	97 a3       	std	Z+39, r25	; 0x27
 	TC_SetCompareA(&TCD0,TIMER_PERIOD/2);
- 334:	82 e4       	ldi	r24, 0x42	; 66
- 336:	90 e0       	ldi	r25, 0x00	; 0
- 338:	80 af       	std	Z+56, r24	; 0x38
- 33a:	91 af       	std	Z+57, r25	; 0x39
-	*/
+ 38a:	82 e4       	ldi	r24, 0x42	; 66
+ 38c:	90 e0       	ldi	r25, 0x00	; 0
+ 38e:	80 af       	std	Z+56, r24	; 0x38
+ 390:	91 af       	std	Z+57, r25	; 0x39
+
+	twiMaster.readData[0] = 0xDE;
+ 392:	8e ed       	ldi	r24, 0xDE	; 222
+ 394:	80 93 0e 20 	sts	0x200E, r24
+	twiMaster.readData[1] = 0xAD;
+ 398:	8d ea       	ldi	r24, 0xAD	; 173
+ 39a:	80 93 0f 20 	sts	0x200F, r24
+	twiMaster.readData[2] = 0xBE;
+ 39e:	8e eb       	ldi	r24, 0xBE	; 190
+ 3a0:	80 93 10 20 	sts	0x2010, r24
+	twiMaster.readData[3] = 0xEF;
+ 3a4:	8f ee       	ldi	r24, 0xEF	; 239
+ 3a6:	80 93 11 20 	sts	0x2011, r24
+
 	int i;//, j;
 
 	// Clear input stream to iPhone then send start edge
 	for (i = 0; i < 3; i++) {
 		send_low();		
- 33c:	98 df       	rcall	.-208    	; 0x26e <send_low>
- 33e:	97 df       	rcall	.-210    	; 0x26e <send_low>
- 340:	96 df       	rcall	.-212    	; 0x26e <send_low>
+ 3aa:	90 df       	rcall	.-224    	; 0x2cc <send_low>
+ 3ac:	8f df       	rcall	.-226    	; 0x2cc <send_low>
+ 3ae:	8e df       	rcall	.-228    	; 0x2cc <send_low>
 	}
 	send_high();
- 342:	85 df       	rcall	.-246    	; 0x24e <send_high>
-		for (i=TWIM_READ_BUFFER_SIZE-1; 0 <= i ;--i) {          // Iterate through the results.
-			send_byte_manchester(twiMaster.readData[i]);        // Send the data using Manchester encoding.
-		}
-		/ **/
-		
-		send_byte_manchester(0xCA);
- 344:	8a ec       	ldi	r24, 0xCA	; 202
- 346:	a5 df       	rcall	.-182    	; 0x292 <send_byte_manchester>
-		send_byte_manchester(0xFE);
- 348:	8e ef       	ldi	r24, 0xFE	; 254
- 34a:	a3 df       	rcall	.-186    	; 0x292 <send_byte_manchester>
-		send_byte_manchester(0xBA);
- 34c:	8a eb       	ldi	r24, 0xBA	; 186
- 34e:	a1 df       	rcall	.-190    	; 0x292 <send_byte_manchester>
-		send_byte_manchester(0xBE);
- 350:	8e eb       	ldi	r24, 0xBE	; 190
- 352:	9f df       	rcall	.-194    	; 0x292 <send_byte_manchester>
-		
-		send_byte_manchester(0xDE);
- 354:	8e ed       	ldi	r24, 0xDE	; 222
- 356:	9d df       	rcall	.-198    	; 0x292 <send_byte_manchester>
-		send_byte_manchester(0xAD);
- 358:	8d ea       	ldi	r24, 0xAD	; 173
- 35a:	9b df       	rcall	.-202    	; 0x292 <send_byte_manchester>
-		send_byte_manchester(0xBE);
- 35c:	8e eb       	ldi	r24, 0xBE	; 190
- 35e:	99 df       	rcall	.-206    	; 0x292 <send_byte_manchester>
-		send_byte_manchester(0xEF);
- 360:	8f ee       	ldi	r24, 0xEF	; 239
- 362:	97 df       	rcall	.-210    	; 0x292 <send_byte_manchester>
-		
-		send_byte_manchester(0xFA);
- 364:	8a ef       	ldi	r24, 0xFA	; 250
- 366:	95 df       	rcall	.-214    	; 0x292 <send_byte_manchester>
-		send_byte_manchester(0xCC);
- 368:	8c ec       	ldi	r24, 0xCC	; 204
- 36a:	93 df       	rcall	.-218    	; 0x292 <send_byte_manchester>
-		send_byte_manchester(0x31);
- 36c:	81 e3       	ldi	r24, 0x31	; 49
- 36e:	91 df       	rcall	.-222    	; 0x292 <send_byte_manchester>
-		send_byte_manchester(0x04);
- 370:	84 e0       	ldi	r24, 0x04	; 4
- 372:	8f df       	rcall	.-226    	; 0x292 <send_byte_manchester>
-		
-		send_byte_manchester(0x00);
- 374:	80 e0       	ldi	r24, 0x00	; 0
- 376:	8d df       	rcall	.-230    	; 0x292 <send_byte_manchester>
-		send_byte_manchester(0x10);
- 378:	80 e1       	ldi	r24, 0x10	; 16
- 37a:	8b df       	rcall	.-234    	; 0x292 <send_byte_manchester>
-		send_byte_manchester(0x47);
- 37c:	87 e4       	ldi	r24, 0x47	; 71
- 37e:	89 df       	rcall	.-238    	; 0x292 <send_byte_manchester>
-		send_byte_manchester(0x13);
- 380:	83 e1       	ldi	r24, 0x13	; 19
- 382:	87 df       	rcall	.-242    	; 0x292 <send_byte_manchester>
-		
-		
-		
-		// Clear input buffer to iPhone with
-		for (i = 0; i < 3; i++) {
-			send_low();
- 384:	74 df       	rcall	.-280    	; 0x26e <send_low>
- 386:	73 df       	rcall	.-282    	; 0x26e <send_low>
- 388:	72 df       	rcall	.-284    	; 0x26e <send_low>
-		}
-	//}
-}
- 38a:	80 e0       	ldi	r24, 0x00	; 0
- 38c:	90 e0       	ldi	r25, 0x00	; 0
- 38e:	08 95       	ret
+ 3b0:	7d df       	rcall	.-262    	; 0x2ac <send_high>
 
-00000390 <__vector_13>:
+	adc_init();
+ 3b2:	44 df       	rcall	.-376    	; 0x23c <adc_init>
+	PORTB_DIR = 0xFF;
+ 3b4:	8f ef       	ldi	r24, 0xFF	; 255
+ 3b6:	80 93 20 06 	sts	0x0620, r24
+	PORTA_DIR = 0x00;
+ 3ba:	10 92 00 06 	sts	0x0600, r1
+	uint16_t pot_val = 0x0000;
+	uint16_t temp_result = 0x0000;
+	uint8_t over_sample_num = 0x00;
+	int test = 0;
+
+	int silence_count = 0;
+ 3be:	20 e0       	ldi	r18, 0x00	; 0
+ 3c0:	30 e0       	ldi	r19, 0x00	; 0
+	PORTB_DIR = 0xFF;
+	PORTA_DIR = 0x00;
+
+	uint16_t pot_val = 0x0000;
+	uint16_t temp_result = 0x0000;
+	uint8_t over_sample_num = 0x00;
+ 3c2:	40 e0       	ldi	r20, 0x00	; 0
+	int silence_count = 0;
+	int output_on = 0;
+	
+	while(1){
+		// Start ADC conversion
+		ADCA.CH0.CTRL |= 0x80;
+ 3c4:	e0 e0       	ldi	r30, 0x00	; 0
+ 3c6:	f2 e0       	ldi	r31, 0x02	; 2
+		}
+
+		if (output_on == 1){
+			cli();
+			
+			PORTB_OUT = 0x01;
+ 3c8:	a4 e2       	ldi	r26, 0x24	; 36
+ 3ca:	b6 e0       	ldi	r27, 0x06	; 6
+ 3cc:	51 e0       	ldi	r21, 0x01	; 1
+	int silence_count = 0;
+	int output_on = 0;
+	
+	while(1){
+		// Start ADC conversion
+		ADCA.CH0.CTRL |= 0x80;
+ 3ce:	80 a1       	ldd	r24, Z+32	; 0x20
+ 3d0:	80 68       	ori	r24, 0x80	; 128
+ 3d2:	80 a3       	std	Z+32, r24	; 0x20
+	
+		if(result_flag) { // If a conversion has completed
+ 3d4:	80 91 00 20 	lds	r24, 0x2000
+ 3d8:	88 23       	and	r24, r24
+ 3da:	41 f0       	breq	.+16     	; 0x3ec <main+0xb6>
+
+			// Disable interrupts while processing result
+			cli();
+ 3dc:	f8 94       	cli
+
+			// Perform Sample Averaging
+			over_sample_num++;
+ 3de:	4f 5f       	subi	r20, 0xFF	; 255
+			temp_result += adc_result;
+			if(over_sample_num == 30) {
+ 3e0:	4e 31       	cpi	r20, 0x1E	; 30
+ 3e2:	09 f4       	brne	.+2      	; 0x3e6 <main+0xb0>
+				pot_val = temp_result/over_sample_num;
+				temp_result = 0;
+				over_sample_num = 0;
+ 3e4:	40 e0       	ldi	r20, 0x00	; 0
+			}
+			result_flag = 0;
+ 3e6:	10 92 00 20 	sts	0x2000, r1
+
+			// Re-enable interrupts
+			sei();
+ 3ea:	78 94       	sei
+		}
+
+		//test = adc_result - 0x09FF;
+		test = adc_result - 0x0550;
+ 3ec:	80 91 01 20 	lds	r24, 0x2001
+ 3f0:	90 91 02 20 	lds	r25, 0x2002
+ 3f4:	80 55       	subi	r24, 0x50	; 80
+ 3f6:	95 40       	sbci	r25, 0x05	; 5
+		//adc_result -= 0x09FF;
+
+		if (test > 0x0000){
+ 3f8:	18 16       	cp	r1, r24
+ 3fa:	19 06       	cpc	r1, r25
+ 3fc:	5c f0       	brlt	.+22     	; 0x414 <main+0xde>
+			silence_count = 0;
+		}else{
+			if (silence_count <= 5000) silence_count++;
+ 3fe:	29 38       	cpi	r18, 0x89	; 137
+ 400:	83 e1       	ldi	r24, 0x13	; 19
+ 402:	38 07       	cpc	r19, r24
+ 404:	14 f4       	brge	.+4      	; 0x40a <main+0xd4>
+ 406:	2f 5f       	subi	r18, 0xFF	; 255
+ 408:	3f 4f       	sbci	r19, 0xFF	; 255
+			output_on = 0;
+		}else{
+			output_on = 1;
+		}
+
+		if (output_on == 1){
+ 40a:	21 3a       	cpi	r18, 0xA1	; 161
+ 40c:	8f e0       	ldi	r24, 0x0F	; 15
+ 40e:	38 07       	cpc	r19, r24
+ 410:	3c f4       	brge	.+14     	; 0x420 <main+0xea>
+ 412:	02 c0       	rjmp	.+4      	; 0x418 <main+0xe2>
+		//test = adc_result - 0x09FF;
+		test = adc_result - 0x0550;
+		//adc_result -= 0x09FF;
+
+		if (test > 0x0000){
+			silence_count = 0;
+ 414:	20 e0       	ldi	r18, 0x00	; 0
+ 416:	30 e0       	ldi	r19, 0x00	; 0
+		}else{
+			output_on = 1;
+		}
+
+		if (output_on == 1){
+			cli();
+ 418:	f8 94       	cli
+			
+			PORTB_OUT = 0x01;
+ 41a:	5c 93       	st	X, r21
+			// Clear input buffer to iPhone with
+			for (i = 0; i < 3; i++) {
+				//_delay_ms(1);
+				//send_low();
+			}
+			sei();
+ 41c:	78 94       	sei
+ 41e:	d7 cf       	rjmp	.-82     	; 0x3ce <main+0x98>
+		}else{
+			PORTB_OUT = 0x00;	
+ 420:	1c 92       	st	X, r1
+ 422:	d5 cf       	rjmp	.-86     	; 0x3ce <main+0x98>
+
+00000424 <__vector_13>:
+	}
+}
 
 
 /*! TWIC Master Interrupt vector. */
 ISR(TWIC_TWIM_vect){
- 390:	1f 92       	push	r1
- 392:	0f 92       	push	r0
- 394:	0f b6       	in	r0, 0x3f	; 63
- 396:	0f 92       	push	r0
- 398:	11 24       	eor	r1, r1
- 39a:	08 b6       	in	r0, 0x38	; 56
- 39c:	0f 92       	push	r0
- 39e:	18 be       	out	0x38, r1	; 56
- 3a0:	09 b6       	in	r0, 0x39	; 57
- 3a2:	0f 92       	push	r0
- 3a4:	19 be       	out	0x39, r1	; 57
- 3a6:	0b b6       	in	r0, 0x3b	; 59
- 3a8:	0f 92       	push	r0
- 3aa:	1b be       	out	0x3b, r1	; 59
- 3ac:	2f 93       	push	r18
- 3ae:	3f 93       	push	r19
- 3b0:	4f 93       	push	r20
- 3b2:	5f 93       	push	r21
- 3b4:	6f 93       	push	r22
- 3b6:	7f 93       	push	r23
- 3b8:	8f 93       	push	r24
- 3ba:	9f 93       	push	r25
- 3bc:	af 93       	push	r26
- 3be:	bf 93       	push	r27
- 3c0:	ef 93       	push	r30
- 3c2:	ff 93       	push	r31
+ 424:	1f 92       	push	r1
+ 426:	0f 92       	push	r0
+ 428:	0f b6       	in	r0, 0x3f	; 63
+ 42a:	0f 92       	push	r0
+ 42c:	11 24       	eor	r1, r1
+ 42e:	08 b6       	in	r0, 0x38	; 56
+ 430:	0f 92       	push	r0
+ 432:	18 be       	out	0x38, r1	; 56
+ 434:	09 b6       	in	r0, 0x39	; 57
+ 436:	0f 92       	push	r0
+ 438:	19 be       	out	0x39, r1	; 57
+ 43a:	0b b6       	in	r0, 0x3b	; 59
+ 43c:	0f 92       	push	r0
+ 43e:	1b be       	out	0x3b, r1	; 59
+ 440:	2f 93       	push	r18
+ 442:	3f 93       	push	r19
+ 444:	4f 93       	push	r20
+ 446:	5f 93       	push	r21
+ 448:	6f 93       	push	r22
+ 44a:	7f 93       	push	r23
+ 44c:	8f 93       	push	r24
+ 44e:	9f 93       	push	r25
+ 450:	af 93       	push	r26
+ 452:	bf 93       	push	r27
+ 454:	ef 93       	push	r30
+ 456:	ff 93       	push	r31
 	TWI_MasterInterruptHandler(&twiMaster);
- 3c4:	80 e0       	ldi	r24, 0x00	; 0
- 3c6:	90 e2       	ldi	r25, 0x20	; 32
- 3c8:	a3 d0       	rcall	.+326    	; 0x510 <TWI_MasterInterruptHandler>
+ 458:	83 e0       	ldi	r24, 0x03	; 3
+ 45a:	90 e2       	ldi	r25, 0x20	; 32
+ 45c:	a3 d0       	rcall	.+326    	; 0x5a4 <TWI_MasterInterruptHandler>
+ 45e:	ff 91       	pop	r31
+ 460:	ef 91       	pop	r30
+ 462:	bf 91       	pop	r27
+ 464:	af 91       	pop	r26
+ 466:	9f 91       	pop	r25
+ 468:	8f 91       	pop	r24
+ 46a:	7f 91       	pop	r23
+ 46c:	6f 91       	pop	r22
+ 46e:	5f 91       	pop	r21
+ 470:	4f 91       	pop	r20
+ 472:	3f 91       	pop	r19
+ 474:	2f 91       	pop	r18
+ 476:	0f 90       	pop	r0
+ 478:	0b be       	out	0x3b, r0	; 59
+ 47a:	0f 90       	pop	r0
+ 47c:	09 be       	out	0x39, r0	; 57
+ 47e:	0f 90       	pop	r0
+ 480:	08 be       	out	0x38, r0	; 56
+ 482:	0f 90       	pop	r0
+ 484:	0f be       	out	0x3f, r0	; 63
+ 486:	0f 90       	pop	r0
+ 488:	1f 90       	pop	r1
+ 48a:	18 95       	reti
+
+0000048c <TWI_MasterInit>:
+                     uint8_t *writeData,
+                     uint8_t bytesToWrite)
+{
+	bool twi_status = TWI_MasterWriteRead(twi, address, writeData, bytesToWrite, 0);
+	return twi_status;
 }
- 3ca:	ff 91       	pop	r31
- 3cc:	ef 91       	pop	r30
- 3ce:	bf 91       	pop	r27
- 3d0:	af 91       	pop	r26
- 3d2:	9f 91       	pop	r25
- 3d4:	8f 91       	pop	r24
- 3d6:	7f 91       	pop	r23
- 3d8:	6f 91       	pop	r22
- 3da:	5f 91       	pop	r21
- 3dc:	4f 91       	pop	r20
- 3de:	3f 91       	pop	r19
- 3e0:	2f 91       	pop	r18
- 3e2:	0f 90       	pop	r0
- 3e4:	0b be       	out	0x3b, r0	; 59
- 3e6:	0f 90       	pop	r0
- 3e8:	09 be       	out	0x39, r0	; 57
- 3ea:	0f 90       	pop	r0
- 3ec:	08 be       	out	0x38, r0	; 56
- 3ee:	0f 90       	pop	r0
- 3f0:	0f be       	out	0x3f, r0	; 63
- 3f2:	0f 90       	pop	r0
- 3f4:	1f 90       	pop	r1
- 3f6:	18 95       	reti
+ 48c:	fc 01       	movw	r30, r24
+ 48e:	60 83       	st	Z, r22
+ 490:	71 83       	std	Z+1, r23	; 0x01
+ 492:	48 63       	ori	r20, 0x38	; 56
+ 494:	db 01       	movw	r26, r22
+ 496:	11 96       	adiw	r26, 0x01	; 1
+ 498:	4c 93       	st	X, r20
+ 49a:	a0 81       	ld	r26, Z
+ 49c:	b1 81       	ldd	r27, Z+1	; 0x01
+ 49e:	15 96       	adiw	r26, 0x05	; 5
+ 4a0:	2c 93       	st	X, r18
+ 4a2:	01 90       	ld	r0, Z+
+ 4a4:	f0 81       	ld	r31, Z
+ 4a6:	e0 2d       	mov	r30, r0
+ 4a8:	81 e0       	ldi	r24, 0x01	; 1
+ 4aa:	84 83       	std	Z+4, r24	; 0x04
+ 4ac:	08 95       	ret
 
-000003f8 <TWI_MasterInit>:
- 3f8:	fc 01       	movw	r30, r24
- 3fa:	60 83       	st	Z, r22
- 3fc:	71 83       	std	Z+1, r23	; 0x01
- 3fe:	48 63       	ori	r20, 0x38	; 56
- 400:	db 01       	movw	r26, r22
- 402:	11 96       	adiw	r26, 0x01	; 1
- 404:	4c 93       	st	X, r20
- 406:	a0 81       	ld	r26, Z
- 408:	b1 81       	ldd	r27, Z+1	; 0x01
- 40a:	15 96       	adiw	r26, 0x05	; 5
- 40c:	2c 93       	st	X, r18
- 40e:	01 90       	ld	r0, Z+
- 410:	f0 81       	ld	r31, Z
- 412:	e0 2d       	mov	r30, r0
- 414:	81 e0       	ldi	r24, 0x01	; 1
- 416:	84 83       	std	Z+4, r24	; 0x04
- 418:	08 95       	ret
+000004ae <TWI_MasterArbitrationLostBusErrorHandler>:
+ *  Handles TWI responses to lost arbitration and bus error.
+ *
+ *  \param twi  The TWI_Master_t struct instance.
+ */
+void TWI_MasterArbitrationLostBusErrorHandler(TWI_Master_t *twi)
+{
+ 4ae:	fc 01       	movw	r30, r24
+	uint8_t currentStatus = twi->interface->MASTER.STATUS;
+ 4b0:	a0 81       	ld	r26, Z
+ 4b2:	b1 81       	ldd	r27, Z+1	; 0x01
+ 4b4:	14 96       	adiw	r26, 0x04	; 4
+ 4b6:	8c 91       	ld	r24, X
+ 4b8:	14 97       	sbiw	r26, 0x04	; 4
 
-0000041a <TWI_MasterArbitrationLostBusErrorHandler>:
- 41a:	fc 01       	movw	r30, r24
- 41c:	a0 81       	ld	r26, Z
- 41e:	b1 81       	ldd	r27, Z+1	; 0x01
- 420:	14 96       	adiw	r26, 0x04	; 4
- 422:	8c 91       	ld	r24, X
- 424:	14 97       	sbiw	r26, 0x04	; 4
- 426:	82 ff       	sbrs	r24, 2
- 428:	03 c0       	rjmp	.+6      	; 0x430 <TWI_MasterArbitrationLostBusErrorHandler+0x16>
- 42a:	94 e0       	ldi	r25, 0x04	; 4
- 42c:	94 8b       	std	Z+20, r25	; 0x14
- 42e:	02 c0       	rjmp	.+4      	; 0x434 <TWI_MasterArbitrationLostBusErrorHandler+0x1a>
- 430:	93 e0       	ldi	r25, 0x03	; 3
- 432:	94 8b       	std	Z+20, r25	; 0x14
- 434:	88 60       	ori	r24, 0x08	; 8
- 436:	14 96       	adiw	r26, 0x04	; 4
- 438:	8c 93       	st	X, r24
- 43a:	13 8a       	std	Z+19, r1	; 0x13
- 43c:	08 95       	ret
+	/* If bus error. */
+	if (currentStatus & TWI_MASTER_BUSERR_bm) {
+ 4ba:	82 ff       	sbrs	r24, 2
+ 4bc:	03 c0       	rjmp	.+6      	; 0x4c4 <TWI_MasterArbitrationLostBusErrorHandler+0x16>
+		twi->result = TWIM_RESULT_BUS_ERROR;
+ 4be:	94 e0       	ldi	r25, 0x04	; 4
+ 4c0:	94 8b       	std	Z+20, r25	; 0x14
+ 4c2:	02 c0       	rjmp	.+4      	; 0x4c8 <TWI_MasterArbitrationLostBusErrorHandler+0x1a>
+	}
+	/* If arbitration lost. */
+	else {
+		twi->result = TWIM_RESULT_ARBITRATION_LOST;
+ 4c4:	93 e0       	ldi	r25, 0x03	; 3
+ 4c6:	94 8b       	std	Z+20, r25	; 0x14
+	}
 
-0000043e <TWI_MasterTransactionFinished>:
- 43e:	fc 01       	movw	r30, r24
- 440:	64 8b       	std	Z+20, r22	; 0x14
- 442:	13 8a       	std	Z+19, r1	; 0x13
- 444:	08 95       	ret
+	/* Clear interrupt flag. */
+	twi->interface->MASTER.STATUS = currentStatus | TWI_MASTER_ARBLOST_bm;
+ 4c8:	88 60       	ori	r24, 0x08	; 8
+ 4ca:	14 96       	adiw	r26, 0x04	; 4
+ 4cc:	8c 93       	st	X, r24
 
-00000446 <TWI_MasterReadHandler>:
- 446:	cf 93       	push	r28
- 448:	df 93       	push	r29
- 44a:	ec 01       	movw	r28, r24
- 44c:	8a 89       	ldd	r24, Y+18	; 0x12
- 44e:	84 30       	cpi	r24, 0x04	; 4
- 450:	98 f4       	brcc	.+38     	; 0x478 <TWI_MasterReadHandler+0x32>
- 452:	e0 e4       	ldi	r30, 0x40	; 64
- 454:	f6 e0       	ldi	r31, 0x06	; 6
- 456:	80 81       	ld	r24, Z
- 458:	10 82       	st	Z, r1
- 45a:	a8 81       	ld	r26, Y
- 45c:	b9 81       	ldd	r27, Y+1	; 0x01
- 45e:	17 96       	adiw	r26, 0x07	; 7
- 460:	9c 91       	ld	r25, X
- 462:	2a 89       	ldd	r18, Y+18	; 0x12
- 464:	de 01       	movw	r26, r28
- 466:	a2 0f       	add	r26, r18
- 468:	b1 1d       	adc	r27, r1
- 46a:	1b 96       	adiw	r26, 0x0b	; 11
- 46c:	9c 93       	st	X, r25
- 46e:	9a 89       	ldd	r25, Y+18	; 0x12
- 470:	9f 5f       	subi	r25, 0xFF	; 255
- 472:	9a 8b       	std	Y+18, r25	; 0x12
- 474:	80 83       	st	Z, r24
- 476:	07 c0       	rjmp	.+14     	; 0x486 <TWI_MasterReadHandler+0x40>
- 478:	e8 81       	ld	r30, Y
- 47a:	f9 81       	ldd	r31, Y+1	; 0x01
- 47c:	83 e0       	ldi	r24, 0x03	; 3
- 47e:	83 83       	std	Z+3, r24	; 0x03
- 480:	62 e0       	ldi	r22, 0x02	; 2
- 482:	ce 01       	movw	r24, r28
- 484:	dc df       	rcall	.-72     	; 0x43e <TWI_MasterTransactionFinished>
- 486:	98 89       	ldd	r25, Y+16	; 0x10
- 488:	8a 89       	ldd	r24, Y+18	; 0x12
- 48a:	89 17       	cp	r24, r25
- 48c:	28 f4       	brcc	.+10     	; 0x498 <TWI_MasterReadHandler+0x52>
- 48e:	e8 81       	ld	r30, Y
- 490:	f9 81       	ldd	r31, Y+1	; 0x01
- 492:	82 e0       	ldi	r24, 0x02	; 2
- 494:	83 83       	std	Z+3, r24	; 0x03
- 496:	07 c0       	rjmp	.+14     	; 0x4a6 <TWI_MasterReadHandler+0x60>
- 498:	e8 81       	ld	r30, Y
- 49a:	f9 81       	ldd	r31, Y+1	; 0x01
- 49c:	87 e0       	ldi	r24, 0x07	; 7
- 49e:	83 83       	std	Z+3, r24	; 0x03
- 4a0:	61 e0       	ldi	r22, 0x01	; 1
- 4a2:	ce 01       	movw	r24, r28
- 4a4:	cc df       	rcall	.-104    	; 0x43e <TWI_MasterTransactionFinished>
- 4a6:	df 91       	pop	r29
- 4a8:	cf 91       	pop	r28
- 4aa:	08 95       	ret
-
-000004ac <TWI_MasterWriteHandler>:
- 4ac:	cf 93       	push	r28
- 4ae:	df 93       	push	r29
- 4b0:	fc 01       	movw	r30, r24
- 4b2:	97 85       	ldd	r25, Z+15	; 0x0f
- 4b4:	20 89       	ldd	r18, Z+16	; 0x10
- 4b6:	a0 81       	ld	r26, Z
- 4b8:	b1 81       	ldd	r27, Z+1	; 0x01
- 4ba:	14 96       	adiw	r26, 0x04	; 4
- 4bc:	8c 91       	ld	r24, X
- 4be:	14 97       	sbiw	r26, 0x04	; 4
- 4c0:	84 ff       	sbrs	r24, 4
- 4c2:	07 c0       	rjmp	.+14     	; 0x4d2 <TWI_MasterWriteHandler+0x26>
- 4c4:	83 e0       	ldi	r24, 0x03	; 3
- 4c6:	13 96       	adiw	r26, 0x03	; 3
- 4c8:	8c 93       	st	X, r24
- 4ca:	85 e0       	ldi	r24, 0x05	; 5
- 4cc:	84 8b       	std	Z+20, r24	; 0x14
+	twi->status = TWIM_STATUS_READY;
  4ce:	13 8a       	std	Z+19, r1	; 0x13
- 4d0:	1c c0       	rjmp	.+56     	; 0x50a <TWI_MasterWriteHandler+0x5e>
- 4d2:	81 89       	ldd	r24, Z+17	; 0x11
- 4d4:	89 17       	cp	r24, r25
- 4d6:	58 f4       	brcc	.+22     	; 0x4ee <TWI_MasterWriteHandler+0x42>
- 4d8:	81 89       	ldd	r24, Z+17	; 0x11
- 4da:	ef 01       	movw	r28, r30
- 4dc:	c8 0f       	add	r28, r24
- 4de:	d1 1d       	adc	r29, r1
- 4e0:	8b 81       	ldd	r24, Y+3	; 0x03
- 4e2:	17 96       	adiw	r26, 0x07	; 7
- 4e4:	8c 93       	st	X, r24
- 4e6:	81 89       	ldd	r24, Z+17	; 0x11
- 4e8:	8f 5f       	subi	r24, 0xFF	; 255
- 4ea:	81 8b       	std	Z+17, r24	; 0x11
- 4ec:	0e c0       	rjmp	.+28     	; 0x50a <TWI_MasterWriteHandler+0x5e>
- 4ee:	82 89       	ldd	r24, Z+18	; 0x12
- 4f0:	82 17       	cp	r24, r18
- 4f2:	28 f4       	brcc	.+10     	; 0x4fe <TWI_MasterWriteHandler+0x52>
- 4f4:	82 81       	ldd	r24, Z+2	; 0x02
- 4f6:	81 60       	ori	r24, 0x01	; 1
- 4f8:	16 96       	adiw	r26, 0x06	; 6
- 4fa:	8c 93       	st	X, r24
- 4fc:	06 c0       	rjmp	.+12     	; 0x50a <TWI_MasterWriteHandler+0x5e>
- 4fe:	83 e0       	ldi	r24, 0x03	; 3
- 500:	13 96       	adiw	r26, 0x03	; 3
- 502:	8c 93       	st	X, r24
- 504:	61 e0       	ldi	r22, 0x01	; 1
- 506:	cf 01       	movw	r24, r30
- 508:	9a df       	rcall	.-204    	; 0x43e <TWI_MasterTransactionFinished>
- 50a:	df 91       	pop	r29
- 50c:	cf 91       	pop	r28
- 50e:	08 95       	ret
+ 4d0:	08 95       	ret
 
-00000510 <TWI_MasterInterruptHandler>:
- 510:	dc 01       	movw	r26, r24
- 512:	ed 91       	ld	r30, X+
- 514:	fc 91       	ld	r31, X
- 516:	24 81       	ldd	r18, Z+4	; 0x04
- 518:	32 2f       	mov	r19, r18
- 51a:	3c 70       	andi	r19, 0x0C	; 12
- 51c:	09 f0       	breq	.+2      	; 0x520 <TWI_MasterInterruptHandler+0x10>
- 51e:	7d cf       	rjmp	.-262    	; 0x41a <TWI_MasterArbitrationLostBusErrorHandler>
- 520:	26 ff       	sbrs	r18, 6
- 522:	01 c0       	rjmp	.+2      	; 0x526 <TWI_MasterInterruptHandler+0x16>
- 524:	c3 cf       	rjmp	.-122    	; 0x4ac <TWI_MasterWriteHandler>
- 526:	22 23       	and	r18, r18
- 528:	0c f4       	brge	.+2      	; 0x52c <TWI_MasterInterruptHandler+0x1c>
- 52a:	8d cf       	rjmp	.-230    	; 0x446 <TWI_MasterReadHandler>
- 52c:	66 e0       	ldi	r22, 0x06	; 6
- 52e:	87 cf       	rjmp	.-242    	; 0x43e <TWI_MasterTransactionFinished>
+000004d2 <TWI_MasterTransactionFinished>:
+ *
+ *  \param twi     The TWI_Master_t struct instance.
+ *  \param result  The result of the operation.
+ */
+void TWI_MasterTransactionFinished(TWI_Master_t *twi, uint8_t result){
+	twi->result = result;
+ 4d2:	fc 01       	movw	r30, r24
+ 4d4:	64 8b       	std	Z+20, r22	; 0x14
+	twi->status = TWIM_STATUS_READY;
+ 4d6:	13 8a       	std	Z+19, r1	; 0x13
+ 4d8:	08 95       	ret
 
-00000530 <_exit>:
- 530:	f8 94       	cli
+000004da <TWI_MasterReadHandler>:
+ *  This is the master read interrupt handler that takes care of
+ *  reading bytes from the TWI slave.
+ *
+ *  \param twi The TWI_Master_t struct instance.
+ */
+void TWI_MasterReadHandler(TWI_Master_t *twi){
+ 4da:	cf 93       	push	r28
+ 4dc:	df 93       	push	r29
+ 4de:	ec 01       	movw	r28, r24
 
-00000532 <__stop_program>:
- 532:	ff cf       	rjmp	.-2      	; 0x532 <__stop_program>
+	/* Fetch data if bytes to be read. */
+	if (twi->bytesRead < TWIM_READ_BUFFER_SIZE) {
+ 4e0:	8a 89       	ldd	r24, Y+18	; 0x12
+ 4e2:	84 30       	cpi	r24, 0x04	; 4
+ 4e4:	98 f4       	brcc	.+38     	; 0x50c <TWI_MasterReadHandler+0x32>
+		char temp = PORTC_DIR; // added
+ 4e6:	e0 e4       	ldi	r30, 0x40	; 64
+ 4e8:	f6 e0       	ldi	r31, 0x06	; 6
+ 4ea:	80 81       	ld	r24, Z
+		PORTC_DIR = 0x00; // added
+ 4ec:	10 82       	st	Z, r1
+		uint8_t data = twi->interface->MASTER.DATA;
+ 4ee:	a8 81       	ld	r26, Y
+ 4f0:	b9 81       	ldd	r27, Y+1	; 0x01
+ 4f2:	17 96       	adiw	r26, 0x07	; 7
+ 4f4:	9c 91       	ld	r25, X
+		twi->readData[twi->bytesRead] = data;
+ 4f6:	2a 89       	ldd	r18, Y+18	; 0x12
+ 4f8:	de 01       	movw	r26, r28
+ 4fa:	a2 0f       	add	r26, r18
+ 4fc:	b1 1d       	adc	r27, r1
+ 4fe:	1b 96       	adiw	r26, 0x0b	; 11
+ 500:	9c 93       	st	X, r25
+		twi->bytesRead++;
+ 502:	9a 89       	ldd	r25, Y+18	; 0x12
+ 504:	9f 5f       	subi	r25, 0xFF	; 255
+ 506:	9a 8b       	std	Y+18, r25	; 0x12
+		PORTC_DIR = temp; // added
+ 508:	80 83       	st	Z, r24
+ 50a:	07 c0       	rjmp	.+14     	; 0x51a <TWI_MasterReadHandler+0x40>
+	}
+
+	/* If buffer overflow, issue STOP and BUFFER_OVERFLOW condition. */
+	else {
+		twi->interface->MASTER.CTRLC = TWI_MASTER_CMD_STOP_gc;
+ 50c:	e8 81       	ld	r30, Y
+ 50e:	f9 81       	ldd	r31, Y+1	; 0x01
+ 510:	83 e0       	ldi	r24, 0x03	; 3
+ 512:	83 83       	std	Z+3, r24	; 0x03
+		TWI_MasterTransactionFinished(twi, TWIM_RESULT_BUFFER_OVERFLOW);
+ 514:	62 e0       	ldi	r22, 0x02	; 2
+ 516:	ce 01       	movw	r24, r28
+ 518:	dc df       	rcall	.-72     	; 0x4d2 <TWI_MasterTransactionFinished>
+	}
+
+	/* Local variable used in if test to avoid compiler warning. */
+	uint8_t bytesToRead = twi->bytesToRead;
+ 51a:	98 89       	ldd	r25, Y+16	; 0x10
+
+	/* If more bytes to read, issue ACK and start a byte read. */
+	if (twi->bytesRead < bytesToRead) {
+ 51c:	8a 89       	ldd	r24, Y+18	; 0x12
+ 51e:	89 17       	cp	r24, r25
+ 520:	28 f4       	brcc	.+10     	; 0x52c <TWI_MasterReadHandler+0x52>
+		twi->interface->MASTER.CTRLC = TWI_MASTER_CMD_RECVTRANS_gc;
+ 522:	e8 81       	ld	r30, Y
+ 524:	f9 81       	ldd	r31, Y+1	; 0x01
+ 526:	82 e0       	ldi	r24, 0x02	; 2
+ 528:	83 83       	std	Z+3, r24	; 0x03
+ 52a:	07 c0       	rjmp	.+14     	; 0x53a <TWI_MasterReadHandler+0x60>
+	}
+
+	/* If transaction finished, issue NACK and STOP condition. */
+	else {
+		twi->interface->MASTER.CTRLC = TWI_MASTER_ACKACT_bm |
+ 52c:	e8 81       	ld	r30, Y
+ 52e:	f9 81       	ldd	r31, Y+1	; 0x01
+ 530:	87 e0       	ldi	r24, 0x07	; 7
+ 532:	83 83       	std	Z+3, r24	; 0x03
+		                               TWI_MASTER_CMD_STOP_gc;
+		TWI_MasterTransactionFinished(twi, TWIM_RESULT_OK);
+ 534:	61 e0       	ldi	r22, 0x01	; 1
+ 536:	ce 01       	movw	r24, r28
+ 538:	cc df       	rcall	.-104    	; 0x4d2 <TWI_MasterTransactionFinished>
+	}
+}
+ 53a:	df 91       	pop	r29
+ 53c:	cf 91       	pop	r28
+ 53e:	08 95       	ret
+
+00000540 <TWI_MasterWriteHandler>:
+ *  Handles TWI transactions (master write) and responses to (N)ACK.
+ *
+ *  \param twi The TWI_Master_t struct instance.
+ */
+void TWI_MasterWriteHandler(TWI_Master_t *twi)
+{
+ 540:	cf 93       	push	r28
+ 542:	df 93       	push	r29
+ 544:	fc 01       	movw	r30, r24
+	/* Local variables used in if tests to avoid compiler warning. */
+	uint8_t bytesToWrite  = twi->bytesToWrite;
+ 546:	97 85       	ldd	r25, Z+15	; 0x0f
+	uint8_t bytesToRead   = twi->bytesToRead;
+ 548:	20 89       	ldd	r18, Z+16	; 0x10
+
+	/* If NOT acknowledged (NACK) by slave cancel the transaction. */
+	if (twi->interface->MASTER.STATUS & TWI_MASTER_RXACK_bm) {
+ 54a:	a0 81       	ld	r26, Z
+ 54c:	b1 81       	ldd	r27, Z+1	; 0x01
+ 54e:	14 96       	adiw	r26, 0x04	; 4
+ 550:	8c 91       	ld	r24, X
+ 552:	14 97       	sbiw	r26, 0x04	; 4
+ 554:	84 ff       	sbrs	r24, 4
+ 556:	07 c0       	rjmp	.+14     	; 0x566 <TWI_MasterWriteHandler+0x26>
+		twi->interface->MASTER.CTRLC = TWI_MASTER_CMD_STOP_gc;
+ 558:	83 e0       	ldi	r24, 0x03	; 3
+ 55a:	13 96       	adiw	r26, 0x03	; 3
+ 55c:	8c 93       	st	X, r24
+		twi->result = TWIM_RESULT_NACK_RECEIVED;
+ 55e:	85 e0       	ldi	r24, 0x05	; 5
+ 560:	84 8b       	std	Z+20, r24	; 0x14
+		twi->status = TWIM_STATUS_READY;
+ 562:	13 8a       	std	Z+19, r1	; 0x13
+ 564:	1c c0       	rjmp	.+56     	; 0x59e <TWI_MasterWriteHandler+0x5e>
+	}
+
+	/* If more bytes to write, send data. */
+	else if (twi->bytesWritten < bytesToWrite) {
+ 566:	81 89       	ldd	r24, Z+17	; 0x11
+ 568:	89 17       	cp	r24, r25
+ 56a:	58 f4       	brcc	.+22     	; 0x582 <TWI_MasterWriteHandler+0x42>
+		uint8_t data = twi->writeData[twi->bytesWritten];
+ 56c:	81 89       	ldd	r24, Z+17	; 0x11
+ 56e:	ef 01       	movw	r28, r30
+ 570:	c8 0f       	add	r28, r24
+ 572:	d1 1d       	adc	r29, r1
+ 574:	8b 81       	ldd	r24, Y+3	; 0x03
+		twi->interface->MASTER.DATA = data;
+ 576:	17 96       	adiw	r26, 0x07	; 7
+ 578:	8c 93       	st	X, r24
+		++twi->bytesWritten;
+ 57a:	81 89       	ldd	r24, Z+17	; 0x11
+ 57c:	8f 5f       	subi	r24, 0xFF	; 255
+ 57e:	81 8b       	std	Z+17, r24	; 0x11
+ 580:	0e c0       	rjmp	.+28     	; 0x59e <TWI_MasterWriteHandler+0x5e>
+	}
+
+	/* If bytes to read, send repeated START condition + Address +
+	 * 'R/_W = 1'
+	 */
+	else if (twi->bytesRead < bytesToRead) {
+ 582:	82 89       	ldd	r24, Z+18	; 0x12
+ 584:	82 17       	cp	r24, r18
+ 586:	28 f4       	brcc	.+10     	; 0x592 <TWI_MasterWriteHandler+0x52>
+		uint8_t readAddress = twi->address | 0x01;
+ 588:	82 81       	ldd	r24, Z+2	; 0x02
+ 58a:	81 60       	ori	r24, 0x01	; 1
+		twi->interface->MASTER.ADDR = readAddress;
+ 58c:	16 96       	adiw	r26, 0x06	; 6
+ 58e:	8c 93       	st	X, r24
+ 590:	06 c0       	rjmp	.+12     	; 0x59e <TWI_MasterWriteHandler+0x5e>
+	}
+
+	/* If transaction finished, send STOP condition and set RESULT OK. */
+	else {
+		twi->interface->MASTER.CTRLC = TWI_MASTER_CMD_STOP_gc;
+ 592:	83 e0       	ldi	r24, 0x03	; 3
+ 594:	13 96       	adiw	r26, 0x03	; 3
+ 596:	8c 93       	st	X, r24
+		TWI_MasterTransactionFinished(twi, TWIM_RESULT_OK);
+ 598:	61 e0       	ldi	r22, 0x01	; 1
+ 59a:	cf 01       	movw	r24, r30
+ 59c:	9a df       	rcall	.-204    	; 0x4d2 <TWI_MasterTransactionFinished>
+	}
+}
+ 59e:	df 91       	pop	r29
+ 5a0:	cf 91       	pop	r28
+ 5a2:	08 95       	ret
+
+000005a4 <TWI_MasterInterruptHandler>:
+ *
+ *  \param twi  The TWI_Master_t struct instance.
+ */
+void TWI_MasterInterruptHandler(TWI_Master_t *twi)
+{
+	uint8_t currentStatus = twi->interface->MASTER.STATUS;
+ 5a4:	dc 01       	movw	r26, r24
+ 5a6:	ed 91       	ld	r30, X+
+ 5a8:	fc 91       	ld	r31, X
+ 5aa:	24 81       	ldd	r18, Z+4	; 0x04
+ *
+ *  Check current status and calls the appropriate handler.
+ *
+ *  \param twi  The TWI_Master_t struct instance.
+ */
+void TWI_MasterInterruptHandler(TWI_Master_t *twi)
+ 5ac:	32 2f       	mov	r19, r18
+ 5ae:	3c 70       	andi	r19, 0x0C	; 12
+{
+	uint8_t currentStatus = twi->interface->MASTER.STATUS;
+
+	/* If arbitration lost or bus error. */
+	if ((currentStatus & TWI_MASTER_ARBLOST_bm) ||
+ 5b0:	09 f0       	breq	.+2      	; 0x5b4 <TWI_MasterInterruptHandler+0x10>
+	    (currentStatus & TWI_MASTER_BUSERR_bm)) {
+
+		TWI_MasterArbitrationLostBusErrorHandler(twi);
+ 5b2:	7d cf       	rjmp	.-262    	; 0x4ae <TWI_MasterArbitrationLostBusErrorHandler>
+	}
+
+	/* If master write interrupt. */
+	else if (currentStatus & TWI_MASTER_WIF_bm) {
+ 5b4:	26 ff       	sbrs	r18, 6
+ 5b6:	01 c0       	rjmp	.+2      	; 0x5ba <TWI_MasterInterruptHandler+0x16>
+		TWI_MasterWriteHandler(twi);
+ 5b8:	c3 cf       	rjmp	.-122    	; 0x540 <TWI_MasterWriteHandler>
+	}
+
+	/* If master read interrupt. */
+	else if (currentStatus & TWI_MASTER_RIF_bm) {
+ 5ba:	22 23       	and	r18, r18
+ 5bc:	0c f4       	brge	.+2      	; 0x5c0 <TWI_MasterInterruptHandler+0x1c>
+		TWI_MasterReadHandler(twi);
+ 5be:	8d cf       	rjmp	.-230    	; 0x4da <TWI_MasterReadHandler>
+	}
+
+	/* If unexpected state. */
+	else {
+		TWI_MasterTransactionFinished(twi, TWIM_RESULT_FAIL);
+ 5c0:	66 e0       	ldi	r22, 0x06	; 6
+ 5c2:	87 cf       	rjmp	.-242    	; 0x4d2 <TWI_MasterTransactionFinished>
+
+000005c4 <_exit>:
+ 5c4:	f8 94       	cli
+
+000005c6 <__stop_program>:
+ 5c6:	ff cf       	rjmp	.-2      	; 0x5c6 <__stop_program>
