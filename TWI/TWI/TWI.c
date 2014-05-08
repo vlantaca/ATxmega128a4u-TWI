@@ -58,10 +58,6 @@
 #include "TC_driver.h"
 #include "My_ADC.h"
 
-// Global variables for keeping track of ADC conversions
-uint16_t adc_result;
-uint8_t result_flag = 0;
-
 #define SLAVE_ADDRESS    0b00101000
 
 #define CPU_SPEED   2000000  // Hz
@@ -76,6 +72,8 @@ uint8_t result_flag = 0;
 
 /* Global variables */
 TWI_Master_t twiMaster;
+uint16_t adc_result;
+uint8_t result_flag = 0;
 /**/
 
 
@@ -134,11 +132,15 @@ void send_byte_manchester ( const unsigned char bits ) {
 
 
 ISR(ADCA_CH0_vect) {
-
+	int test = 0;
 	adc_result = ADCA.CH0.RES;
-	result_flag = 1;
-
-	// Interrupt flag is cleared upon return from ISR
+	
+	//test = adc_result - 0x0550; //600-700mV threshold
+	test = adc_result - 0x0384; ///400mv
+	//test = adc_result - 0x0960; //1.2v
+	
+	if (test > 0x0000)
+		result_flag = 1;
 }
 
 
@@ -186,61 +188,19 @@ int main(void){
 	
 	int i;
 	int checkSum = 0;
+	int output_on = 0;
 
 	// Initialize ADC
 	adc_init();
 	PORTB_DIR = 0xFF;
 	PORTA_DIR = 0x00;
-
-	//uint16_t pot_val = 0x0000;	// Commented out because it's not being used
-									// TALK with Vincent to determine if it is necessary
-	uint16_t temp_result = 0x0000;
-	uint8_t over_sample_num = 0x00;
-	int test = 0;
-
-	int silence_count = 0;
-	int output_on = 0;
 	
 	while(1){
 		// Start ADC conversion
 		ADCA.CH0.CTRL |= 0x80;
-	
-		if(result_flag) { // If a conversion has completed
 
-			// Disable interrupts while processing result
-			cli();
-
-			// Perform Sample Averaging
-			over_sample_num++;
-			temp_result += adc_result;
-			if(over_sample_num == 30) {
-				//pot_val = temp_result/over_sample_num;
-				temp_result = 0;
-				over_sample_num = 0;
-			}
-			result_flag = 0;
-
-			// Re-enable interrupts
-			sei();
-		}
-
-		//test = adc_result - 0x0550; //600-700mV threshold
-		test = adc_result - 0x0384; ///400mv
-		//test = adc_result - 0x0960; //1.2v
-
-		if (test > 0x0000){
-			silence_count = 0;
-		}else{
-			if (silence_count <= 5000) silence_count++;
-		}
-
-		if (silence_count > 4000){
-			output_on = 0;
-		}else{
-			output_on = 1;
-		}
-
-		if (output_on == 1){
+		// Check if enable flag was set high
+		if (result_flag){
 			// Disable interrupts to send packet
 			cli();
 			
@@ -251,6 +211,8 @@ int main(void){
 			 */
 			PORTB_OUT = 0x01;
 			/***************************************/
+			
+			// Add TWI communication to sensor
 			
 			// Reset and then create packet checksum
 			checkSum = 0;
@@ -282,7 +244,8 @@ int main(void){
 				send_low();
 			}
 			
-			// Enable interrupts to check ADC
+			// Reset result_flag and Enable interrupts to check ADC
+			result_flag = 0;
 			sei();
 		}else{
 			/* **************************************
