@@ -147,8 +147,6 @@ ISR(ADCA_CH0_vect) {
 
 
 int main(void){
-
-
 	/* Comment out the 3 lines below if you want to use
 	   your own pull-up resistors (I recommend using 4.7k).
 	*/
@@ -188,12 +186,13 @@ int main(void){
 	
 	int i;
 	int checkSum = 0;
-	int output_on = 0;
 
 	// Initialize ADC
 	adc_init();
 	PORTB_DIR = 0xFF;
 	PORTA_DIR = 0x00;
+	
+	send_low();
 	
 	while(1){
 		// Start ADC conversion
@@ -212,8 +211,13 @@ int main(void){
 			PORTB_OUT = 0x01;
 			/***************************************/
 			
-			// Add TWI communication to sensor
-			
+			// Retrieve TWI communication to sensor
+			/*TWI_MasterRead(
+				&twiMaster,
+				SLAVE_ADDRESS,
+				TWIM_READ_BUFFER_SIZE);                    // Begin a TWI transaction.
+			while (twiMaster.status != TWIM_STATUS_READY); // Wait until the transaction completes.
+			*/
 			// Reset and then create packet checksum
 			checkSum = 0;
 			for (i = 0; i < 4; i++) {

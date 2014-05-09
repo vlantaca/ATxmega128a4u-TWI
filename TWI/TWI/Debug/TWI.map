@@ -259,7 +259,7 @@ LOAD c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.2.1002/avr
 .rela.plt
  *(.rela.plt)
 
-.text           0x00000000      0x6a8
+.text           0x00000000      0x668
  *(.vectors)
  .vectors       0x00000000      0x1fc c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.2.1002/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.7.2/../../../../avr/lib/avrxmega7/crtx128a4u.o
                 0x00000000                __vector_default
@@ -471,36 +471,36 @@ LOAD c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.2.1002/avr
                 0x000002f0       0x4c TWI.o
                 0x000002f0                send_byte_manchester
  .text.__vector_71
-                0x0000033c       0x4e TWI.o
+                0x0000033c       0x58 TWI.o
                 0x0000033c                __vector_71
- .text.main     0x0000038a      0x17a TWI.o
-                0x0000038a                main
+ .text.main     0x00000394      0x130 TWI.o
+                0x00000394                main
  .text.__vector_13
-                0x00000504       0x68 TWI.o
-                0x00000504                __vector_13
+                0x000004c4       0x68 TWI.o
+                0x000004c4                __vector_13
  .text.TWI_MasterInit
-                0x0000056c       0x22 twi_master_driver.o
-                0x0000056c                TWI_MasterInit
+                0x0000052c       0x22 twi_master_driver.o
+                0x0000052c                TWI_MasterInit
  .text.TWI_MasterArbitrationLostBusErrorHandler
-                0x0000058e       0x24 twi_master_driver.o
-                0x0000058e                TWI_MasterArbitrationLostBusErrorHandler
+                0x0000054e       0x24 twi_master_driver.o
+                0x0000054e                TWI_MasterArbitrationLostBusErrorHandler
  .text.TWI_MasterTransactionFinished
-                0x000005b2        0x8 twi_master_driver.o
-                0x000005b2                TWI_MasterTransactionFinished
+                0x00000572        0x8 twi_master_driver.o
+                0x00000572                TWI_MasterTransactionFinished
  .text.TWI_MasterReadHandler
-                0x000005ba       0x66 twi_master_driver.o
-                0x000005ba                TWI_MasterReadHandler
+                0x0000057a       0x66 twi_master_driver.o
+                0x0000057a                TWI_MasterReadHandler
  .text.TWI_MasterWriteHandler
-                0x00000620       0x64 twi_master_driver.o
-                0x00000620                TWI_MasterWriteHandler
+                0x000005e0       0x64 twi_master_driver.o
+                0x000005e0                TWI_MasterWriteHandler
  .text.TWI_MasterInterruptHandler
-                0x00000684       0x20 twi_master_driver.o
-                0x00000684                TWI_MasterInterruptHandler
-                0x000006a4                . = ALIGN (0x2)
+                0x00000644       0x20 twi_master_driver.o
+                0x00000644                TWI_MasterInterruptHandler
+                0x00000664                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x000006a4        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.2.1002/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.7.2/avrxmega7\libgcc.a(_exit.o)
-                0x000006a4                _exit
-                0x000006a4                exit
+ .fini9         0x00000664        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.2.1002/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.7.2/avrxmega7\libgcc.a(_exit.o)
+                0x00000664                _exit
+                0x00000664                exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -519,11 +519,11 @@ LOAD c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.2.1002/avr
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x000006a4        0x4 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.2.1002/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.7.2/avrxmega7\libgcc.a(_exit.o)
+ .fini0         0x00000664        0x4 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.2.1002/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.7.2/avrxmega7\libgcc.a(_exit.o)
  *(.fini0)
-                0x000006a8                _etext = .
+                0x00000668                _etext = .
 
-.data           0x00802000        0x0 load address 0x000006a8
+.data           0x00802000        0x0 load address 0x00000668
                 0x00802000                PROVIDE (__data_start, .)
  *(.data)
  .data          0x00802000        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.2.1002/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.7.2/../../../../avr/lib/avrxmega7/crtx128a4u.o
@@ -555,8 +555,8 @@ LOAD c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.2.1002/avr
                 0x00802001                adc_result
                 0x00802003                twiMaster
                 0x00802018                PROVIDE (__bss_end, .)
-                0x000006a8                __data_load_start = LOADADDR (.data)
-                0x000006a8                __data_load_end = (__data_load_start + SIZEOF (.data))
+                0x00000668                __data_load_start = LOADADDR (.data)
+                0x00000668                __data_load_end = (__data_load_start + SIZEOF (.data))
 
 .noinit         0x00802018        0x0
                 0x00802018                PROVIDE (__noinit_start, .)
@@ -644,33 +644,33 @@ LOAD c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.2.1002/avr
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000     0x4403
+.debug_info     0x00000000     0x43d3
  *(.debug_info)
  .debug_info    0x00000000      0x645 clksys_driver.o
  .debug_info    0x00000645      0x6bf My_ADC.o
  .debug_info    0x00000d04     0x1315 TC_driver.o
- .debug_info    0x00002019     0x14e5 TWI.o
- .debug_info    0x000034fe      0x856 twi_master_driver.o
- .debug_info    0x00003d54      0x6af twi_slave_driver.o
+ .debug_info    0x00002019     0x14b5 TWI.o
+ .debug_info    0x000034ce      0x856 twi_master_driver.o
+ .debug_info    0x00003d24      0x6af twi_slave_driver.o
  *(.gnu.linkonce.wi.*)
 
-.debug_abbrev   0x00000000      0xb9b
+.debug_abbrev   0x00000000      0xb74
  *(.debug_abbrev)
  .debug_abbrev  0x00000000      0x1c8 clksys_driver.o
  .debug_abbrev  0x000001c8      0x182 My_ADC.o
  .debug_abbrev  0x0000034a      0x176 TC_driver.o
- .debug_abbrev  0x000004c0      0x286 TWI.o
- .debug_abbrev  0x00000746      0x242 twi_master_driver.o
- .debug_abbrev  0x00000988      0x213 twi_slave_driver.o
+ .debug_abbrev  0x000004c0      0x25f TWI.o
+ .debug_abbrev  0x0000071f      0x242 twi_master_driver.o
+ .debug_abbrev  0x00000961      0x213 twi_slave_driver.o
 
-.debug_line     0x00000000     0x14f2
+.debug_line     0x00000000     0x14b2
  *(.debug_line)
  .debug_line    0x00000000      0x2b8 clksys_driver.o
  .debug_line    0x000002b8      0x1f5 My_ADC.o
  .debug_line    0x000004ad      0x39b TC_driver.o
- .debug_line    0x00000848      0x470 TWI.o
- .debug_line    0x00000cb8      0x44b twi_master_driver.o
- .debug_line    0x00001103      0x3ef twi_slave_driver.o
+ .debug_line    0x00000848      0x430 TWI.o
+ .debug_line    0x00000c78      0x44b twi_master_driver.o
+ .debug_line    0x000010c3      0x3ef twi_slave_driver.o
 
 .debug_frame    0x00000000      0x594
  *(.debug_frame)
@@ -681,7 +681,7 @@ LOAD c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.2.1002/avr
  .debug_frame   0x000003dc       0xfc twi_master_driver.o
  .debug_frame   0x000004d8       0xbc twi_slave_driver.o
 
-.debug_str      0x00000000     0x21df
+.debug_str      0x00000000     0x21ab
  *(.debug_str)
  .debug_str     0x00000000      0x6d9 clksys_driver.o
                                 0x719 (size before relaxing)
@@ -689,21 +689,21 @@ LOAD c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.2.1002/avr
                                 0x6a4 (size before relaxing)
  .debug_str     0x00000cbd      0xaab TC_driver.o
                                 0xc15 (size before relaxing)
- .debug_str     0x00001768      0x468 TWI.o
-                                0xbc2 (size before relaxing)
- .debug_str     0x00001bd0      0x312 twi_master_driver.o
+ .debug_str     0x00001768      0x434 TWI.o
+                                0xb8e (size before relaxing)
+ .debug_str     0x00001b9c      0x312 twi_master_driver.o
                                 0x5b2 (size before relaxing)
- .debug_str     0x00001ee2      0x2fd twi_slave_driver.o
+ .debug_str     0x00001eae      0x2fd twi_slave_driver.o
                                 0x4a0 (size before relaxing)
 
-.debug_loc      0x00000000     0x14f0
+.debug_loc      0x00000000     0x1401
  *(.debug_loc)
  .debug_loc     0x00000000      0x2b6 clksys_driver.o
  .debug_loc     0x000002b6       0x75 My_ADC.o
  .debug_loc     0x0000032b      0x378 TC_driver.o
- .debug_loc     0x000006a3      0x4eb TWI.o
- .debug_loc     0x00000b8e      0x622 twi_master_driver.o
- .debug_loc     0x000011b0      0x340 twi_slave_driver.o
+ .debug_loc     0x000006a3      0x3fc TWI.o
+ .debug_loc     0x00000a9f      0x622 twi_master_driver.o
+ .debug_loc     0x000010c1      0x340 twi_slave_driver.o
 
 .debug_macinfo
  *(.debug_macinfo)
