@@ -184,10 +184,10 @@ int main(void){
 	twiMaster.readData[2] = 0xBE;
 	twiMaster.readData[3] = 0xEF;
 	* ***************************************/
-	int rawHumidData[2];
-	int rawTempData[2];
-	float humidData = 0;
-	float tempData = 0;
+	//int rawHumidData[2];
+	//int rawTempData[2];
+	//float humidData = 0;
+	//float tempData = 0;
 	int i, j;
 	int checkSum = 0;
 	unsigned char mask = 0x01;
@@ -226,6 +226,7 @@ int main(void){
 			// Check two most sig bits of twiMaster.readData[3] for input
 			// status: 00B = Valid Data,            01B = Stale Data,
 			//         10B = ChipCap2 Command Mode, 11B = Not Used
+			/* Just sending raw data to iphone to be decoded
 			if (!(twiMaster.readData[3] & 0xC0)) {
 				// Grab humidity and temp data
 				for (j=0; j < 6; j++) {
@@ -238,7 +239,7 @@ int main(void){
 				humidData = (rawHumidData[1]*256 + rawHumidData[0])/pow(2,14) * 100;
 				tempData = (rawTempData[1]*64 + rawTempData[0]/4)/pow(2,14) * 165 -40;
 			}
-			
+			*/
 			// Reset and then create packet checksum
 			checkSum = 0;
 			for (i = 0; i < 4; i++) {
