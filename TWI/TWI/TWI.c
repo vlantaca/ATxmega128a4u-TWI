@@ -54,6 +54,7 @@
 #include "avr_compiler.h"
 #include "twi_master_driver.h"
 #include "twi_slave_driver.h"
+#include <math.h>
 #include <util/delay.h>
 #include "TC_driver.h"
 #include "My_ADC.h"
@@ -177,15 +178,19 @@ int main(void){
 	/* **************************************
 	 * DEBUG: Known packet values to confirm
 	 *        communication is working.
-	 */
+	 *
 	twiMaster.readData[0] = 0xDE;
 	twiMaster.readData[1] = 0xAD;
 	twiMaster.readData[2] = 0xBE;
 	twiMaster.readData[3] = 0xEF;
-	/* ***************************************/
-	
-	int i;
+	* ***************************************/
+	int rawHumidData[2];
+	int rawTempData[2];
+	float humidData = 0;
+	float tempData = 0;
+	int i, j;
 	int checkSum = 0;
+	unsigned char mask = 0x01;
 
 	// Initialize ADC
 	adc_init();
@@ -212,18 +217,32 @@ int main(void){
 			/***************************************/
 			
 			// Retrieve TWI communication to sensor
-			/*TWI_MasterRead(
+			TWI_MasterRead(
 				&twiMaster,
 				SLAVE_ADDRESS,
 				TWIM_READ_BUFFER_SIZE);                    // Begin a TWI transaction.
 			while (twiMaster.status != TWIM_STATUS_READY); // Wait until the transaction completes.
-			*/
+			
+			// Check two most sig bits of twiMaster.readData[3] for input
+			// status: 00B = Valid Data,            01B = Stale Data,
+			//         10B = ChipCap2 Command Mode, 11B = Not Used
+			if (!(twiMaster.readData[3] & 0xC0)) {
+				// Grab humidity and temp data
+				for (j=0; j < 6; j++) {
+					rawHumidData[1] += twiMaster.readData[3] & (mask << j);
+					rawTempData[0] += twiMaster.readData[0] & (mask << j+2);
+				}
+				rawHumidData[0] = twiMaster.readData[2];
+				rawTempData[1] = twiMaster.readData[1];
+			
+				humidData = (rawHumidData[1]*256 + rawHumidData[0])/pow(2,14) * 100;
+				tempData = (rawTempData[1]*64 + rawTempData[0]/4)/pow(2,14) * 165 -40;
+			}
+			
 			// Reset and then create packet checksum
 			checkSum = 0;
 			for (i = 0; i < 4; i++) {
-				unsigned char mask = 0x01;
-				int j;
-				for (j=0; j < 8 ;j++) {
+				for (j = 0; j < 8 ;j++) {
 					if (twiMaster.readData[i] & (mask << j))
 						checkSum += 1;
 				}
@@ -251,7 +270,7 @@ int main(void){
 			// Reset result_flag and Enable interrupts to check ADC
 			result_flag = 0;
 			sei();
-		}else{
+		} else{
 			/* **************************************
 			 * DEBUG: writes a zero to Port B0 when
 			 *        the ADC value is below the high
