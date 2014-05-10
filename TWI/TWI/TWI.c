@@ -178,12 +178,12 @@ int main(void){
 	/* **************************************
 	 * DEBUG: Known packet values to confirm
 	 *        communication is working.
-	 *
+	 */
 	twiMaster.readData[0] = 0xDE;
 	twiMaster.readData[1] = 0xAD;
 	twiMaster.readData[2] = 0xBE;
 	twiMaster.readData[3] = 0xEF;
-	* ***************************************/
+	/* ***************************************/
 	//int rawHumidData[2];
 	//int rawTempData[2];
 	//float humidData = 0;
@@ -197,6 +197,7 @@ int main(void){
 	PORTB_DIR = 0xFF;
 	PORTA_DIR = 0x00;
 	
+	// Clear line out
 	send_low();
 	
 	while(1){
@@ -226,7 +227,7 @@ int main(void){
 			// Check two most sig bits of twiMaster.readData[3] for input
 			// status: 00B = Valid Data,            01B = Stale Data,
 			//         10B = ChipCap2 Command Mode, 11B = Not Used
-			/* Just sending raw data to iphone to be decoded
+			/* Just sending raw data to iPhone to be decoded
 			if (!(twiMaster.readData[3] & 0xC0)) {
 				// Grab humidity and temp data
 				for (j=0; j < 6; j++) {
@@ -240,36 +241,41 @@ int main(void){
 				tempData = (rawTempData[1]*64 + rawTempData[0]/4)/pow(2,14) * 165 -40;
 			}
 			*/
-			// Reset and then create packet checksum
-			checkSum = 0;
-			for (i = 0; i < 4; i++) {
-				for (j = 0; j < 8 ;j++) {
-					if (twiMaster.readData[i] & (mask << j))
-						checkSum += 1;
+			// Check two most significant bits of twiMaster.readData[3] for input
+			// status: 00B = Valid Data,            01B = Stale Data,
+			//         10B = ChipCap2 Command Mode, 11B = Not Used
+			if (!(twiMaster.readData[3] & 0xC0)) {
+				// Reset and then create packet checksum
+				checkSum = 0;
+				for (i = 0; i < 4; i++) {
+					for (j = 0; j < 8 ;j++) {
+						if (twiMaster.readData[i] & (mask << j))
+							checkSum += 1;
+					}
 				}
+			
+				// Clear input stream to iPhone then send start edge
+				for (i = 0; i < 3; i++) {
+					send_low();
+				}
+				send_high();
+			
+				// Send data
+				for (i=TWIM_READ_BUFFER_SIZE-1; 0 <= i ;--i) {          // Iterate through the results.
+					send_byte_manchester(twiMaster.readData[i]);      // Send the data using Manchester encoding.
+				}
+			
+				// Send checksum
+				send_byte_manchester(checkSum);
+			
+				// Clear input buffer to iPhone with
+				for (i = 0; i < 3; i++) {
+					send_low();
+				}
+			
+				// Reset result_flag and Enable interrupts to check ADC
+				result_flag = 0;
 			}
-			
-			// Clear input stream to iPhone then send start edge
-			for (i = 0; i < 3; i++) {
-				send_low();
-			}
-			send_high();
-			
-			// Send data
-			for (i=TWIM_READ_BUFFER_SIZE-1; 0 <= i ;--i) {          // Iterate through the results.
-				send_byte_manchester(twiMaster.readData[i]);      // Send the data using Manchester encoding.
-			}
-			
-			// Send checksum
-			send_byte_manchester(checkSum);
-			
-			// Clear input buffer to iPhone with
-			for (i = 0; i < 3; i++) {
-				send_low();
-			}
-			
-			// Reset result_flag and Enable interrupts to check ADC
-			result_flag = 0;
 			sei();
 		} else{
 			/* **************************************
