@@ -58,11 +58,12 @@
 #include <util/delay.h>
 #include "TC_driver.h"
 #include "My_ADC.h"
+#include "clksys_driver.h"
 
 #define SLAVE_ADDRESS    0b00101000
 
 #define CPU_SPEED   2000000  // Hz
-#define BAUDRATE	100000
+#define BAUDRATE	50000
 #define TWI_BAUDSETTING TWI_BAUD(CPU_SPEED, BAUDRATE)
 
 #define AM_FREQUENCY         15000  // Hz
@@ -76,7 +77,6 @@ TWI_Master_t twiMaster;
 uint16_t adc_result;
 uint8_t result_flag = 0;
 /**/
-
 
 void send_high ( ) {
 	int c;
@@ -178,12 +178,12 @@ int main(void){
 	/* **************************************
 	 * DEBUG: Known packet values to confirm
 	 *        communication is working.
-	 *
-	twiMaster.readData[0] = 0xDE;
-	twiMaster.readData[1] = 0xAD;
-	twiMaster.readData[2] = 0xBE;
-	twiMaster.readData[3] = 0xEF;
-	* ***************************************/
+	 */
+	//twiMaster.readData[0] = 0xDE;
+	//twiMaster.readData[1] = 0xAD;
+	//twiMaster.readData[2] = 0xBE;
+	//twiMaster.readData[3] = 0xEF;
+	/* ***************************************/
 	//int rawHumidData[2];
 	//int rawTempData[2];
 	//float humidData = 0;
@@ -192,13 +192,25 @@ int main(void){
 	int checkSum = 0;
 	unsigned char mask = 0x01;
 
+	// Initialize data to 0;
+	twiMaster.readData[0] = 0x00;
+	twiMaster.readData[1] = 0x00;
+	twiMaster.readData[2] = 0x00;
+	twiMaster.readData[3] = 0x00;
+	
+	
 	// Initialize ADC
 	adc_init();
 	PORTB_DIR = 0xFF;
 	PORTA_DIR = 0x00;
 	
+	// Clear line out
 	send_low();
-	
+
+
+	int send_count;
+
+
 	while(1){
 		// Start ADC conversion
 		ADCA.CH0.CTRL |= 0x80;
@@ -206,8 +218,17 @@ int main(void){
 		// Check if enable flag was set high
 		if (result_flag){
 			// Disable interrupts to send packet
-			cli();
 			
+			
+			TWI_MasterRead(
+				&twiMaster,
+				SLAVE_ADDRESS,
+				TWIM_READ_BUFFER_SIZE);                    // Begin a TWI transaction.
+			while (twiMaster.status != TWIM_STATUS_READY); // Wait until the transaction completes.
+			
+			
+			cli();
+
 			/* **************************************
 			 * DEBUG: writes a one to Port B0 when
 			 *        the ADC value is past the high
@@ -215,18 +236,14 @@ int main(void){
 			 */
 			PORTB_OUT = 0x01;
 			/***************************************/
-			
+
 			// Retrieve TWI communication to sensor
-			TWI_MasterRead(
-				&twiMaster,
-				SLAVE_ADDRESS,
-				TWIM_READ_BUFFER_SIZE);                    // Begin a TWI transaction.
-			while (twiMaster.status != TWIM_STATUS_READY); // Wait until the transaction completes.
-			
+
+
 			// Check two most sig bits of twiMaster.readData[3] for input
 			// status: 00B = Valid Data,            01B = Stale Data,
 			//         10B = ChipCap2 Command Mode, 11B = Not Used
-			/* Just sending raw data to iphone to be decoded
+			/* Just sending raw data to iPhone to be decoded
 			if (!(twiMaster.readData[3] & 0xC0)) {
 				// Grab humidity and temp data
 				for (j=0; j < 6; j++) {
@@ -240,36 +257,41 @@ int main(void){
 				tempData = (rawTempData[1]*64 + rawTempData[0]/4)/pow(2,14) * 165 -40;
 			}
 			*/
-			// Reset and then create packet checksum
-			checkSum = 0;
-			for (i = 0; i < 4; i++) {
-				for (j = 0; j < 8 ;j++) {
-					if (twiMaster.readData[i] & (mask << j))
-						checkSum += 1;
+			// Check two most significant bits of twiMaster.readData[3] for input
+			// status: 00B = Valid Data,            01B = Stale Data,
+			//         10B = ChipCap2 Command Mode, 11B = Not Used
+			if (!(twiMaster.readData[0] & 0xC0)) {
+				// Reset and then create packet checksum
+				checkSum = 0;
+				for (i = 0; i < 4; i++) {
+					for (j = 0; j < 8 ;j++) {
+						if (twiMaster.readData[i] & (mask << j))
+							checkSum += 1;
+					}
 				}
+
+				// Clear input stream to iPhone then send start edge
+				for (i = 0; i < 3; i++) {
+					send_low();
+				}
+				send_high();
+
+				// Send data
+				for (i=TWIM_READ_BUFFER_SIZE-1; 0 <= i ;--i) {          // Iterate through the results.
+					send_byte_manchester(twiMaster.readData[i]);      // Send the data using Manchester encoding.
+				}
+
+				// Send checksum
+				send_byte_manchester(checkSum);
+
+				// Clear input buffer to iPhone with
+				for (i = 0; i < 3; i++) {
+					send_low();
+				}
+
+				// Reset result_flag and Enable interrupts to check ADC
+				result_flag = 0;
 			}
-			
-			// Clear input stream to iPhone then send start edge
-			for (i = 0; i < 3; i++) {
-				send_low();
-			}
-			send_high();
-			
-			// Send data
-			for (i=TWIM_READ_BUFFER_SIZE-1; 0 <= i ;--i) {          // Iterate through the results.
-				send_byte_manchester(twiMaster.readData[i]);      // Send the data using Manchester encoding.
-			}
-			
-			// Send checksum
-			send_byte_manchester(checkSum);
-			
-			// Clear input buffer to iPhone with
-			for (i = 0; i < 3; i++) {
-				send_low();
-			}
-			
-			// Reset result_flag and Enable interrupts to check ADC
-			result_flag = 0;
 			sei();
 		} else{
 			/* **************************************
