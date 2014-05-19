@@ -208,7 +208,7 @@ int main(void){
 	send_low();
 
 
-	int send_count;
+	//int send_count;
 
 
 	while(1){
